@@ -7,6 +7,7 @@ import { titleCaseString } from '../util/textUtil';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { getCurrentUser, profileActions } from '../slices/profile';
 import { Dispatch } from 'react';
+import { ObjectEntries } from '../util/util';
 
 const styles = {
   page: {
@@ -115,8 +116,20 @@ export const Workout = () => {
   }, [currentWorkout]);
 
   useEffect(() => {
-    // TODO: check profile for if today is already a completed workout
-  });
+    if (
+      currentUser.completedWorkouts &&
+      currentUser.completedWorkouts[week] &&
+      currentUser.completedWorkouts[week][day]
+    ) {
+      setCurrentWorkout(currentUser.completedWorkouts[week][day]);
+      const completedWorkout: {[key: string]: number[]} = {};
+      ObjectEntries(currentUser.completedWorkouts[week][day]).forEach(([_, workout]: [string, workout]) => {
+        completedWorkout[workout.name] = Array.from(Array(workout.sets.length).keys());
+      });
+      console.log(completedWorkout);
+      setCompletedSets(completedWorkout);
+    }
+  }, [week, day, currentUser]);
 
   const updateSet = (movement: string, setNumber: number) => {
     if (!completedSets[movement]) {
