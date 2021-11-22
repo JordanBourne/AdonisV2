@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import { SetStateAction, useState } from 'react';
 import { Grid, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 
-import { myProfile } from '../profile';
-import { getCurrentWorkout, getWorkoutForDay, workout } from '../util/workoutUtil';
+import { calculateNewTrainingMaxes, calculateUpdatedLifts, constructCompletedWorkout, getWorkoutForDay, validateWorkoutCompleted, workout } from '../util/workoutUtil';
 import { useEffect } from 'react';
 import { titleCaseString } from '../util/textUtil';
-import { NumberLiteralType } from 'typescript';
+import { useAppDispatch, useAppSelector } from '../hooks';
+import { getCurrentUser, profileActions } from '../slices/profile';
+import { Dispatch } from 'react';
+import { ObjectEntries } from '../util/util';
 
 const styles = {
   page: {
@@ -67,9 +69,20 @@ const styles = {
     alignItems: 'center',
     margin: '0 5px 0 5px'
   },
+  setRepButton: {
+    border: '1px solid #AAA',
+    height: '20px',
+    width: '20px',
+    borderRadius: '20px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: '0 5px 0 5px'
+  },
   setContainer: {
     display: 'flex',
     justifyContent: 'flex-end',
+    alignItems: 'center',
     cursor: 'pointer'
   },
   completedSet: {
@@ -78,14 +91,45 @@ const styles = {
 }
 
 export const Workout = () => {
-  const [week, setWeek]: [string | number, Function] = useState(myProfile.programSettings.week);
-  const [day, setDay]: [string | number, Function] = useState(myProfile.programSettings.day);
+  const currentUser = useAppSelector(getCurrentUser);
+  const dispatch = useAppDispatch();
+  const [week, setWeek]: [number, Dispatch<SetStateAction<number>>] = useState(currentUser ? currentUser.programSettings.week : 1);
+  const [day, setDay]: [number, Dispatch<SetStateAction<number>>] = useState(currentUser ? currentUser.programSettings.day : 1);
   const [currentWorkout, setCurrentWorkout]: [workout[] | undefined,  Function] = useState();
   const [completedSets, setCompletedSets]: [{[key: string]: number[]}, Function] = useState({});
+  const [lastSetReps, setLastSetReps]: [{[key: string]: number}, Dispatch<SetStateAction<{[key: number]: number}>>] = useState({});
 
   useEffect(() => {
-    setCurrentWorkout(getWorkoutForDay(week, day, myProfile));
-  }, [week, day])
+    if (currentUser) setCurrentWorkout(getWorkoutForDay(week, day, currentUser));
+  }, [week, day, currentUser]);
+
+  useEffect(() => {
+    if (currentWorkout) {
+      const defaultLastSets: {[key: string]: number} = {};
+      currentWorkout.forEach((workout: workout) => {
+        defaultLastSets[workout.name] = workout.sets[workout.sets.length - 1];
+      });
+
+      setLastSetReps(defaultLastSets);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentWorkout]);
+
+  useEffect(() => {
+    if (
+      currentUser.completedWorkouts &&
+      currentUser.completedWorkouts[week] &&
+      currentUser.completedWorkouts[week][day]
+    ) {
+      setCurrentWorkout(currentUser.completedWorkouts[week][day]);
+      const completedWorkout: {[key: string]: number[]} = {};
+      ObjectEntries(currentUser.completedWorkouts[week][day]).forEach(([_, workout]: [string, workout]) => {
+        completedWorkout[workout.name] = Array.from(Array(workout.sets.length).keys());
+      });
+      console.log(completedWorkout);
+      setCompletedSets(completedWorkout);
+    }
+  }, [week, day, currentUser]);
 
   const updateSet = (movement: string, setNumber: number) => {
     if (!completedSets[movement]) {
@@ -97,7 +141,37 @@ export const Workout = () => {
     }
     
     setCompletedSets({...completedSets});
+  };
+
+  const addRep = (workout: workout) => {
+    if (lastSetReps[workout.name]) {
+      setLastSetReps({...lastSetReps, [workout.name]: lastSetReps[workout.name] + 1});
+    } else {
+      setLastSetReps({...lastSetReps, [workout.name]: workout.sets[workout.sets.length - 1] + 1});
+    }
+  };
+
+  const minusRep = (workout: workout) => {
+    if (lastSetReps[workout.name]) {
+      setLastSetReps({...lastSetReps, [workout.name]: lastSetReps[workout.name] - 1});
+    } else {
+      setLastSetReps({...lastSetReps, [workout.name]: workout.sets[workout.sets.length - 1] - 1});
+    }
+  };
+
+  const completeWorkout = () => {
+    const workoutCompleted: boolean = validateWorkoutCompleted(completedSets, currentWorkout);
+    if (!workoutCompleted || !currentWorkout) {
+    } else {
+      const completedWorkout = constructCompletedWorkout(week, day, currentWorkout, lastSetReps);
+      const newTrainingMaxes = calculateNewTrainingMaxes(currentUser, currentWorkout, lastSetReps);
+      const updatedLifts = calculateUpdatedLifts(currentWorkout, lastSetReps);
+      dispatch(profileActions.completeWorkout(completedWorkout, newTrainingMaxes, updatedLifts));
+    }
+    
   }
+
+  if (!currentUser) return <div>Error, no current user</div>;
 
   return (
     <Grid container sx={styles.page}>
@@ -112,10 +186,10 @@ export const Workout = () => {
                 id="week-select"
                 value={week}
                 label="Week"
-                onChange={(event) => setWeek(event.target.value)}
+                onChange={(event) => setWeek(+event.target.value)}
               >
-                {Object.keys(myProfile.program.setScheme.weeks).map((weekNumber: string) => (
-                  <MenuItem key={weekNumber} value={parseInt(weekNumber)}>{parseInt(weekNumber)}</MenuItem>
+                {Object.keys(currentUser.program.setScheme.weeks).map((weekNumber: string) => (
+                  <MenuItem key={weekNumber} value={weekNumber}>{weekNumber}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -126,9 +200,9 @@ export const Workout = () => {
                 id="day-select"
                 value={day}
                 label="Day"
-                onChange={(event) => setDay(event.target.value)}
+                onChange={(event) => setDay(+event.target.value)}
               >
-                {Array.from(Array(myProfile.programSettings.daysPerWeek).keys())
+                {Array.from(Array(currentUser.programSettings.daysPerWeek).keys())
                   .map((val: number) => (
                     <MenuItem key={val} value={val + 1}>{val + 1}</MenuItem>
                   )
@@ -137,7 +211,7 @@ export const Workout = () => {
             </FormControl>
           </Grid>
         </Grid>
-        {currentWorkout && currentWorkout.map((workout: workout) => (
+        {currentWorkout && currentWorkout.map((workout: workout, workoutIndex: number) => (
           <Grid item container sx={styles.movementsContainer} key={workout.name}>
             <Grid item>
               <Typography sx={styles.movementName}>{titleCaseString(workout.name)}</Typography>
@@ -146,17 +220,20 @@ export const Workout = () => {
             <Grid item sx={styles.setContainer}>
               {workout.sets.map((set: number, index: number) => {
                 const completed = completedSets[workout.name] && completedSets[workout.name].includes(index);
-                console.log('# Completed Sets #', completedSets);
-                console.log('Set Completed 1? ', completedSets[workout.name])
-                console.log('Set Completed 3? ', completed)
+                const repCount = index === workout.sets.length - 1 ? 
+                  (lastSetReps[workout.name] ? lastSetReps[workout.name] : set) :
+                  set;
                 return (
-                  <Grid item sx={{...styles.setCounter, ...(completed ? styles.completedSet : {})}} onClick={() => updateSet(workout.name, index)}>{set}</Grid>
+                  <Grid item key={`${workout.name} - set - ${index}`} sx={{...styles.setCounter, ...(completed ? styles.completedSet : {})}} onClick={() => updateSet(workout.name, index)}>{repCount}</Grid>
                 )
               })}
+              <Grid item key={`${workout.name}-add`} sx={styles.setRepButton} onClick={() => addRep(workout)}>+</Grid>
+              <Grid item key={`${workout.name}-minus`} sx={styles.setRepButton} onClick={() => minusRep(workout)}>-</Grid>
             </Grid>
           </Grid>
           )
         )}
+        <button onClick={completeWorkout}>complete workout placeholder button</button>
       </Grid>
     </Grid>
   )

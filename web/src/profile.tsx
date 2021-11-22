@@ -1,4 +1,4 @@
-import { program, SBS_RTF } from './workout';
+import { lift, program, SBS_RTF, trainingMax } from './workout';
 
 export type liftName = 'bench press'
   | 'back squat'
@@ -20,12 +20,13 @@ export interface roundingSettings {
   microPlates: boolean;
 }
 
-export interface lift {
-  weight: number;
-  date: Date;
+export interface completedWorkout {
+  
 }
 
 export interface profile {
+  lifts: {[key: string]: lift[]},
+  completedWorkouts: {},
   program: program;
   programSettings: {
     lifts: {
@@ -36,12 +37,14 @@ export interface profile {
     daysPerWeek: number;
   }
   roundingSettings: roundingSettings;
-  lifts: {
-    [key in liftName]?: lift[];
+  trainingMaxes: {
+    [key in liftName]?: trainingMax[];
   };
 }
 
 export const myProfile: profile = {
+  lifts: {},
+  completedWorkouts: {},
   program: SBS_RTF,
   programSettings: {
     lifts: {
@@ -64,46 +67,46 @@ export const myProfile: profile = {
     rounding: 5,
     microPlates: false
   },
-  lifts: {
+  trainingMaxes: {
     'bench press': [{
       weight: 225,
-      date: new Date('2021/11/01')
+      date: new Date('2021/11/01').toJSON()
     }],
     'back squat': [{
       weight: 275,
-      date: new Date('2021/11/01')
+      date: new Date('2021/11/01').toJSON()
     }],
     'overhead press': [{
       weight: 135,
-      date: new Date('2021/11/01')
+      date: new Date('2021/11/01').toJSON()
     }],
     deadlift: [{
       weight: 315,
-      date: new Date('2021/11/01')
+      date: new Date('2021/11/01').toJSON()
     }],
     'front squat': [{
       weight: 315,
-      date: new Date('2021/11/01')
+      date: new Date('2021/11/01').toJSON()
     }],
     'paused squat': [{
       weight: 315,
-      date: new Date('2021/11/01')
+      date: new Date('2021/11/01').toJSON()
     }],
     'close grip bench press': [{
       weight: 315,
-      date: new Date('2021/11/01')
+      date: new Date('2021/11/01').toJSON()
     }],
     'spoto press': [{
       weight: 315,
-      date: new Date('2021/11/01')
+      date: new Date('2021/11/01').toJSON()
     }],
     'block deadlift': [{
       weight: 315,
-      date: new Date('2021/11/01')
+      date: new Date('2021/11/01').toJSON()
     }],
     'seated overhead press': [{
       weight: 315,
-      date: new Date('2021/11/01')
+      date: new Date('2021/11/01').toJSON()
     }],
   }
 }

@@ -2,6 +2,18 @@ export const progressionSchemes = {
 
 }
 
+export interface lift {
+  estimatedWeight: number;
+  reps: number;
+  weight: number;
+  date: string;
+}
+
+export interface trainingMax {
+  weight: number;
+  date: string;
+}
+
 export interface weekMovements {
   [key: number]: string[];
 }
@@ -29,30 +41,6 @@ export interface setScheme {
   weeks: {
     [key: number]: weightScheme;
   };
-}
-
-export const calculateNextTrainingMaxDeltaPercentage = (targetReps: number, actualReps: number) : number => {
-  const repDiff = targetReps - actualReps;
-  switch (repDiff) {
-    case 5:
-      return 3;
-    case 4:
-      return 2;
-    case 3:
-      return 1.5;
-    case 2:
-      return 1;
-    case 1:
-      return 0.5;
-    case 0:
-      return 0;
-    case -1:
-      return -2;
-    case -2:
-      return -5;
-    default:
-      return repDiff > 0 ? 3 : -5;
-  }
 }
 
 export const SBS_RTF_SET_SCHEME: setScheme = {
