@@ -1,1 +1,1 @@
-module.exports={"userPoolId":"${Token[TOKEN.510]}","userPoolClientId":"${Token[TOKEN.515]}"}
+module.exports={"userPoolId":"${Token[TOKEN.516]}","userPoolClientId":"${Token[TOKEN.521]}"}

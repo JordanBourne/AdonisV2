@@ -10,8 +10,11 @@ import { Calendar } from './Calendar/Calendar';
 import { Programs } from './Programs/Programs';
 import { Workout } from './Workout/Workout';
 import './app.css';
-import store from './store'
+import { store } from './store'
 import { Provider } from 'react-redux'
+import { login } from './login';
+
+// login();
 
 function App() {
   return (

@@ -1,1 +1,0 @@
-docker run -it --mount type=bind,source="$(pwd)"/../,target=/app adonis /app/awsInfrastructure/docker-deploy-cmd.sh
