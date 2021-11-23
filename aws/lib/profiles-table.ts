@@ -12,6 +12,7 @@ export const createProfilesTable = (scope: cdk.Construct, props: CreateProfilesT
             type: dynamodb.AttributeType.STRING
         },
         billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-        tableName: `${props.prefix}ProfilesTable`
+        tableName: `${props.prefix}ProfilesTable`,
+        removalPolicy: cdk.RemovalPolicy.DESTROY
     });
 };
