@@ -12,7 +12,8 @@ import { Workout } from './Workout/Workout';
 import './app.css';
 import { store } from './store'
 import { Provider } from 'react-redux'
-import { login } from './login';
+import { SignIn } from './Auth/SignIn/component';
+import { SignUp } from './Auth/SignUp/component';
 
 // login();
 
@@ -23,6 +24,12 @@ function App() {
         <Router >
           <NavBar />
           <Switch>
+            <Route path="/signup">
+              <SignUp />
+            </Route>
+            <Route path="/signin">
+              <SignIn />
+            </Route>
             <Route path="/calendar">
               <Calendar />
             </Route>

@@ -22,6 +22,9 @@ export const NavBar = () => {
           <Box sx={{ flexGrow: 1 }} />
           <Box>
             <IconButton size="small" color="inherit">
+              <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/signin">Sign in</NavLink>
+            </IconButton>
+            <IconButton size="small" color="inherit">
               <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/home">Home</NavLink>
             </IconButton>
             <IconButton size="small" color="inherit">

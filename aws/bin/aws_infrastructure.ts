@@ -3,6 +3,7 @@ import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
 import { AwsInfrastructureStack } from '../lib/aws_infrastructure-stack';
 import { configurations, Configuration } from './environment-configurations';
+import * as _ from 'lodash';
 
 try {
   if (!process.env.ENV_NAME) {
@@ -18,7 +19,7 @@ try {
     `)
   }
   const app = new cdk.App();
-  new AwsInfrastructureStack(app, 'AwsInfrastructureStack', configuration);
+  new AwsInfrastructureStack(app, _.upperFirst(`${configuration.dev}AdonisInfrastructure`), configuration);
 } catch(e) {
   console.error(e);
   throw(e);

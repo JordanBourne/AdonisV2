@@ -25,6 +25,7 @@
   "dependencies": {
     "@aws-cdk/aws-cognito": "1.133.0",
     "@aws-cdk/core": "1.133.0",
+    "@types/lodash": "^4.14.177",
     "aws-sdk": "^2.1033.0",
     "lodash": "^4.17.21",
     "source-map-support": "^0.5.16"

@@ -2,9 +2,7 @@
 
 import * as cdk from '@aws-cdk/core';
 import * as cognito from '@aws-cdk/aws-cognito';
-
-const fs = require('fs');
-const path = require('path');
+import * as iam from '@aws-cdk/aws-iam';
 
 interface CreateProfilesTableProps {
     prefix: string;
@@ -13,7 +11,9 @@ interface CreateProfilesTableProps {
 export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfilesTableProps) => {
     const pool = new cognito.UserPool(scope, `${props.prefix}CognitoUserPool`, {
         selfSignUpEnabled: true,
-        accountRecovery: cognito.AccountRecovery.EMAIL_ONLY
+        signInAliases: { username: true, email: true },
+        accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+        autoVerify: { email: true }
     });
     const userPoolClient = new cognito.UserPoolClient(scope, `${props.prefix}CognitoUserPoolClient`, {
         userPool: pool,
@@ -34,6 +34,30 @@ export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfile
         ],
         identityPoolName: `${props.prefix}CognitoIdentityPool`,
         developerProviderName: `${props.prefix}CognitoIdentityPool`,
+    });
+
+
+    const authenticatedRole = new iam.Role(scope, `${props.prefix}AuthenticatedRole`, {
+        assumedBy: new iam.FederatedPrincipal('cognito-identity.amazonaws.com', {
+            "StringEquals": { "cognito-identity.amazonaws.com:aud": identityPool.ref },
+            "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "authenticated" },
+        }, "sts:AssumeRoleWithWebIdentity"),
+    });
+    authenticatedRole.addToPolicy(new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+            "mobileanalytics:PutEvents",
+            "cognito-sync:*",
+            "cognito-identity:*"
+        ],
+        resources: ["*"],
+    }));
+    const defaultPolicy = new cognito.CfnIdentityPoolRoleAttachment(scope, `${props.prefix}CognitoDefaultPolicy`, {
+        identityPoolId: identityPool.ref,
+        roles: {
+            // 'unauthenticated': unauthenticatedRole.roleArn,
+            'authenticated': authenticatedRole.roleArn
+        }
     });
 
     const poolIdOutput = new cdk.CfnOutput(scope, `${props.prefix}CognitoUserPoolIdOutput`, {

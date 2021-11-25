@@ -30,12 +30,6 @@ export const profileActions = {
   }),
 };
 
-// export const fetchProfile = (dispatch, getState) => {
-//   client.get('todos').then(todos => {
-//     dispatch({ type: 'todos/todosLoaded', payload: todos })
-//   })
-// }
-
 export const getCurrentUser = (state: RootState) => state.profile.currentUser
 
 export default function profileReducers(state = initialState, action: any) {
