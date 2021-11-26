@@ -14,6 +14,7 @@ import { store } from './store'
 import { Provider } from 'react-redux'
 import { SignIn } from './Auth/SignIn/component';
 import { SignUp } from './Auth/SignUp/component';
+import { EnterConfirmationCode } from './Auth/EnterConfirmationCode/component';
 
 // login();
 
@@ -26,6 +27,9 @@ function App() {
           <Switch>
             <Route path="/signup">
               <SignUp />
+            </Route>
+            <Route path="/enter-confirmation-code">
+              <EnterConfirmationCode />
             </Route>
             <Route path="/signin">
               <SignIn />

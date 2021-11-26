@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { Avatar, Button, CssBaseline, TextField, Link, Grid, Box, Typography, Container, Alert } from '@mui/material';
 import { LockOutlined } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import * as styles from './styles';
 import { signUp } from './actions';
+import { useHistory } from 'react-router-dom';
 const LockOutlinedIcon = LockOutlined;
 
 const theme = createTheme();
 
 export const SignUp = () => {
+    const history = useHistory();
+    const dispatch = useDispatch();
     const [isSuccess, setIsSuccess] = useState(false);
     const [usernameErrorText, setUsernameErrorText] = useState('');
     const [emailErrorText, setEmailErrorText] = useState('');
@@ -62,7 +66,9 @@ export const SignUp = () => {
         signUp({
             username: username as string,
             email: email as string,
-            password: password as string
+            password: password as string,
+            dispatch,
+            history
         }).then(() => {
             setIsSuccess(true);
         });

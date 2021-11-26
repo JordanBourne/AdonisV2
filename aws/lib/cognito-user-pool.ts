@@ -46,8 +46,8 @@ export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfile
     authenticatedRole.addToPolicy(new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: [
-            "mobileanalytics:PutEvents",
-            "cognito-sync:*",
+            "mobileanalytics:PutEvents", // don't know if needed
+            "cognito-sync:*", // don't know if needed.
             "cognito-identity:*"
         ],
         resources: ["*"],
@@ -55,7 +55,6 @@ export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfile
     const defaultPolicy = new cognito.CfnIdentityPoolRoleAttachment(scope, `${props.prefix}CognitoDefaultPolicy`, {
         identityPoolId: identityPool.ref,
         roles: {
-            // 'unauthenticated': unauthenticatedRole.roleArn,
             'authenticated': authenticatedRole.roleArn
         }
     });

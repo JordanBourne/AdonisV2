@@ -1,0 +1,1 @@
+export const SetUsername = Symbol('SetUsername');
