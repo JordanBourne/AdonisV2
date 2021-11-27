@@ -1,23 +1,22 @@
-import { SetUsername } from './actions';
+import * as AmazonCognitoIdentity from 'amazon-cognito-identity-js';
+import { SetCognitoUser, SetCognitoUserData } from './action-symbols';
 
 interface AuthState {
-  username?:string|null
+  userData: SetCognitoUserData
 };
 
 const initialState: AuthState = {
-  username: null
+  userData: null
 };
 
 export default function authReducers(state = initialState, action: any) {
   switch (action.type) {
-    case SetUsername:
-      console.log('@@@@ GOT IT');
-      const newState = {
+    case SetCognitoUser:
+      const userData : SetCognitoUserData = action.userData; 
+      return {
         ...state,
-        username: action.username,
+        userData
       };
-      console.log(newState);
-      return newState;
     default:
       return state
   }

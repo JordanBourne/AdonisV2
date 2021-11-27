@@ -2,7 +2,7 @@ import * as AWS from "aws-sdk";
 import * as AmazonCognitoIdentity from 'amazon-cognito-identity-js';
 
 import { UserPoolId, UserPoolClientId } from '../Cognito/config';
-import { SetUsername } from '../actions';
+import { SetCognitoUserAction } from '../action-symbols';
 
 type ParametersSignup = {
     username: string;
@@ -25,7 +25,7 @@ export const signUp = async({username, email, password, dispatch, history} : Par
         })
     ];
     
-    await new Promise((resolve, reject) => {
+    const cognitoUser : AmazonCognitoIdentity.CognitoUser = await new Promise((resolve, reject) => {
         userPool.signUp(username, password, attributeList, [], (err, result) => {
             if (err) {
                 return reject(err);
@@ -33,16 +33,11 @@ export const signUp = async({username, email, password, dispatch, history} : Par
             if (!result) {
                 return reject('Result is empty?');
             }
-            var cognitoUser = result.user;
-            console.log('user name is ' + cognitoUser.getUsername());
-            return resolve(null);
+            return resolve(result.user);
         });
     });
 
-    dispatch({
-        type: SetUsername,
-        username
-    });
+    dispatch(SetCognitoUserAction(cognitoUser));
 
     history.push('/enter-confirmation-code');
 };

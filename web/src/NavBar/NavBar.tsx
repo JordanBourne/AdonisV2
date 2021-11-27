@@ -1,11 +1,27 @@
 import React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
+import { useSelector } from 'react-redux';
+import { AppBar, Box, Button, Toolbar, IconButton, Typography } from '@mui/material';
 import { NavLink } from 'react-router-dom';
 import './navBar.css'
+
+import { selectUsername } from '../Auth/selectors';
+import { logOut } from '../Auth/actions';
+
+export const SignInButton = () => {
+  const username = useSelector(selectUsername);
+  if (username) {
+    return (
+      <IconButton size="small" color="inherit" onClick={logOut}>
+        Logout
+      </IconButton>
+    );
+  }
+  return (
+    <IconButton size="small" color="inherit">
+      <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/signin">Sign in</NavLink>
+    </IconButton>
+  );
+};
 
 export const NavBar = () => {
   return (
@@ -21,9 +37,7 @@ export const NavBar = () => {
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
           <Box>
-            <IconButton size="small" color="inherit">
-              <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/signin">Sign in</NavLink>
-            </IconButton>
+            <SignInButton />
             <IconButton size="small" color="inherit">
               <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/home">Home</NavLink>
             </IconButton>

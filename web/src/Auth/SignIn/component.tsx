@@ -2,19 +2,21 @@ import React, { useState } from 'react';
 import { Avatar, Button, CssBaseline, TextField, FormControlLabel, Checkbox, Link, Grid, Box, Typography, Container } from '@mui/material';
 import { LockOutlined } from '@mui/icons-material';
 import { signIn } from './actions';
+import { useHistory } from 'react-router-dom';
 const LockOutlinedIcon = LockOutlined;
 
 export const SignIn = () => {
-  const [emailErrorText, setEmailErrorText] = useState('');
+  const history = useHistory();
+  const [usernameErrorText, setUsernameErrorText] = useState('');
   const [passwordErrorText, setPasswordErrorText] = useState('');
-  const validateEmail = (event: React.FormEvent<HTMLFormElement>) => {
+  const validateUsername = (event: React.FormEvent<HTMLFormElement>) => {
     const data = new FormData(event.currentTarget);
-    const email = data.get('email');
-    if (email === '') {
-      setEmailErrorText('Email is a required field');
+    const username = data.get('username');
+    if (username === '') {
+      setUsernameErrorText('Username is a required field');
       return false;
     }
-    setEmailErrorText('');
+    setUsernameErrorText('');
     return true;
   };
   const validatePassword = (event: React.FormEvent<HTMLFormElement>) => {
@@ -28,9 +30,9 @@ export const SignIn = () => {
     return true;
   };
   const validateForm = (event: React.FormEvent<HTMLFormElement>) => {
-    const emailValid = validateEmail(event);
+    const usernameIsValid = validateUsername(event);
     const passwordValid = validatePassword(event);
-    return emailValid && passwordValid;
+    return usernameIsValid && passwordValid;
   };
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -39,25 +41,27 @@ export const SignIn = () => {
       return false;
     }
     const data = new FormData(event.currentTarget);
-    const email = data.get('email');
+    const username = data.get('username');
     const password = data.get('password');
     signIn({
-      email: email as string,
+      username: username as string,
       password: password as string
+    }).then(() => {
+      history.push('/home');
     });
     return false;
   };
 
-  const EmailAddressField = ({ errorText }: { errorText: string }) => {
+  const UsernameField = ({ errorText }: { errorText: string }) => {
     return (
       <TextField
         margin='normal'
         required
         fullWidth
-        id='email'
-        label='Email Address'
-        name='email'
-        autoComplete='email'
+        id='username'
+        label='Username'
+        name='username'
+        autoComplete='username'
         autoFocus
         error={errorText !== ''}
         helperText={errorText}
@@ -99,7 +103,7 @@ export const SignIn = () => {
           Sign in
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-          <EmailAddressField errorText={emailErrorText} />
+          <UsernameField errorText={usernameErrorText} />
           <PasswordField errorText={passwordErrorText} />
           <FormControlLabel
             control={<Checkbox value="remember" color="primary" />}

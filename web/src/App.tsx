@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Route,
@@ -15,10 +15,14 @@ import { Provider } from 'react-redux'
 import { SignIn } from './Auth/SignIn/component';
 import { SignUp } from './Auth/SignUp/component';
 import { EnterConfirmationCode } from './Auth/EnterConfirmationCode/component';
+import { checkExistingUserSession } from './Auth/actions';
 
 // login();
 
 function App() {
+  useEffect(() => {
+    checkExistingUserSession();
+  }, []);
   return (
     <div>
       <Provider store={store}>
