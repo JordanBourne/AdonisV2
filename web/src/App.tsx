@@ -17,8 +17,9 @@ import { SignIn } from './Auth/SignIn/component';
 import { SignUp } from './Auth/SignUp/component';
 import { EnterConfirmationCode } from './Auth/EnterConfirmationCode/component';
 import { checkExistingUserSession } from './Auth/actions';
-import { checkAndFetchMyProfile } from './Profile/actions';
+import { SetMyProfileAction } from './Profile/action-symbols';
 import { selectMyProfile } from './Profile/selectors';
+import { myProfile } from './profile';
 
 // login();
 

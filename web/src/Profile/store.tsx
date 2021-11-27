@@ -3,13 +3,14 @@ import type { profile, completedWorkout, liftName } from './types';
 import { SetMyProfile, CompleteMyWorkout } from './action-symbols';
 import { createAction } from '@reduxjs/toolkit'
 import { ObjectEntries } from '../util/util';
+import { myProfile } from '../profile';
 
 interface MyProfileState {
   myProfile: profile | null;
 };
 
 const initialState: MyProfileState = {
-  myProfile: null,
+  myProfile: myProfile,
 };
 
 export const profileActions = {
