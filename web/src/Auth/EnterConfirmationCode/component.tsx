@@ -5,7 +5,7 @@ import { LockOutlined } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { confirmRegistration } from './actions';
 import * as styles from './styles';
-import { selectUsername } from '../selectors';
+import { selectMyUsername } from '../selectors';
 const LockOutlinedIcon = LockOutlined;
 
 const theme = createTheme();
@@ -13,7 +13,7 @@ const theme = createTheme();
 export const EnterConfirmationCode = () => {
     const [isSuccess, setIsSuccess] = useState(false);
     const [confirmationCodeErrorText, setConfirmationCodeErrorText] = useState('');
-    const username = useSelector(selectUsername);
+    const username = useSelector(selectMyUsername);
     const validateConfirmationCode = (event: React.FormEvent<HTMLFormElement>) => {
         const data = new FormData(event.currentTarget);
         const confirmationCode = data.get('confirmationCode');

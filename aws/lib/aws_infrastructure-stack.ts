@@ -8,7 +8,10 @@ export class AwsInfrastructureStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: Configuration) {
     super(scope, id, props);
 
-    createProfilesTable(this, props);
-    createCognitoUserPool(this, props);
+    const { ProfilesTable } = createProfilesTable(this, props);
+    createCognitoUserPool(this, {
+      ...props,
+      ProfilesTable
+    });
   }
 }

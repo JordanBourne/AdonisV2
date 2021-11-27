@@ -1,0 +1,1 @@
+export const awsAccountId = '295909865373';

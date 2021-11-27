@@ -3,9 +3,11 @@ import { Grid, FormControl, InputLabel, MenuItem, Select, Typography } from '@mu
 
 import { calculateNewTrainingMaxes, calculateUpdatedLifts, constructCompletedWorkout, getWorkoutForDay, validateWorkoutCompleted, workout } from '../util/workoutUtil';
 import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { titleCaseString } from '../util/textUtil';
 import { useAppDispatch, useAppSelector } from '../hooks';
-import { getCurrentUser, profileActions } from '../slices/profile';
+import { selectMyProfile } from '../Profile/selectors';
+import * as profileActions from '../Profile/actions';
 import { Dispatch } from 'react';
 import { ObjectEntries } from '../util/util';
 
@@ -91,17 +93,17 @@ const styles = {
 }
 
 export const Workout = () => {
-  const currentUser = useAppSelector(getCurrentUser);
+  const myProfile = useSelector(selectMyProfile);
   const dispatch = useAppDispatch();
-  const [week, setWeek]: [number, Dispatch<SetStateAction<number>>] = useState(currentUser ? currentUser.programSettings.week : 1);
-  const [day, setDay]: [number, Dispatch<SetStateAction<number>>] = useState(currentUser ? currentUser.programSettings.day : 1);
+  const [week, setWeek]: [number, Dispatch<SetStateAction<number>>] = useState(myProfile ? myProfile.programSettings.week : 1);
+  const [day, setDay]: [number, Dispatch<SetStateAction<number>>] = useState(myProfile ? myProfile.programSettings.day : 1);
   const [currentWorkout, setCurrentWorkout]: [workout[] | undefined,  Function] = useState();
   const [completedSets, setCompletedSets]: [{[key: string]: number[]}, Function] = useState({});
   const [lastSetReps, setLastSetReps]: [{[key: string]: number}, Dispatch<SetStateAction<{[key: number]: number}>>] = useState({});
 
   useEffect(() => {
-    if (currentUser) setCurrentWorkout(getWorkoutForDay(week, day, currentUser));
-  }, [week, day, currentUser]);
+    if (myProfile) setCurrentWorkout(getWorkoutForDay(week, day, myProfile));
+  }, [week, day, myProfile]);
 
   useEffect(() => {
     if (currentWorkout) {
@@ -117,19 +119,19 @@ export const Workout = () => {
 
   useEffect(() => {
     if (
-      currentUser.completedWorkouts &&
-      currentUser.completedWorkouts[week] &&
-      currentUser.completedWorkouts[week][day]
+      myProfile.completedWorkouts &&
+      myProfile.completedWorkouts[week] &&
+      myProfile.completedWorkouts[week][day]
     ) {
-      setCurrentWorkout(currentUser.completedWorkouts[week][day]);
+      setCurrentWorkout(myProfile.completedWorkouts[week][day]);
       const completedWorkout: {[key: string]: number[]} = {};
-      ObjectEntries(currentUser.completedWorkouts[week][day]).forEach(([_, workout]: [string, workout]) => {
+      ObjectEntries(myProfile.completedWorkouts[week][day]).forEach(([_, workout]: [string, workout]) => {
         completedWorkout[workout.name] = Array.from(Array(workout.sets.length).keys());
       });
       console.log(completedWorkout);
       setCompletedSets(completedWorkout);
     }
-  }, [week, day, currentUser]);
+  }, [week, day, myProfile]);
 
   const updateSet = (movement: string, setNumber: number) => {
     if (!completedSets[movement]) {
@@ -164,14 +166,14 @@ export const Workout = () => {
     if (!workoutCompleted || !currentWorkout) {
     } else {
       const completedWorkout = constructCompletedWorkout(week, day, currentWorkout, lastSetReps);
-      const newTrainingMaxes = calculateNewTrainingMaxes(currentUser, currentWorkout, lastSetReps);
+      const newTrainingMaxes = calculateNewTrainingMaxes(myProfile, currentWorkout, lastSetReps);
       const updatedLifts = calculateUpdatedLifts(currentWorkout, lastSetReps);
       dispatch(profileActions.completeWorkout(completedWorkout, newTrainingMaxes, updatedLifts));
     }
     
   }
 
-  if (!currentUser) return <div>Error, no current user</div>;
+  if (!myProfile) return <div>Error, no current user</div>;
 
   return (
     <Grid container sx={styles.page}>
@@ -188,7 +190,7 @@ export const Workout = () => {
                 label="Week"
                 onChange={(event) => setWeek(+event.target.value)}
               >
-                {Object.keys(currentUser.program.setScheme.weeks).map((weekNumber: string) => (
+                {Object.keys(myProfile.program.setScheme.weeks).map((weekNumber: string) => (
                   <MenuItem key={weekNumber} value={weekNumber}>{weekNumber}</MenuItem>
                 ))}
               </Select>
@@ -202,7 +204,7 @@ export const Workout = () => {
                 label="Day"
                 onChange={(event) => setDay(+event.target.value)}
               >
-                {Array.from(Array(currentUser.programSettings.daysPerWeek).keys())
+                {Array.from(Array(myProfile.programSettings.daysPerWeek).keys())
                   .map((val: number) => (
                     <MenuItem key={val} value={val + 1}>{val + 1}</MenuItem>
                   )

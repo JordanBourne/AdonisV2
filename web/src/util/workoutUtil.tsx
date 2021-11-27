@@ -1,4 +1,4 @@
-import { liftName, profile } from '../profile';
+import { liftName, profile } from '../Profile/types';
 import { lift, trainingMax, weightScheme } from '../workout';
 
 export type workout = {

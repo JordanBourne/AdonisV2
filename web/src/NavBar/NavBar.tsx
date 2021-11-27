@@ -4,11 +4,11 @@ import { AppBar, Box, Button, Toolbar, IconButton, Typography } from '@mui/mater
 import { NavLink } from 'react-router-dom';
 import './navBar.css'
 
-import { selectUsername } from '../Auth/selectors';
+import { selectMyUsername } from '../Auth/selectors';
 import { logOut } from '../Auth/actions';
 
 export const SignInButton = () => {
-  const username = useSelector(selectUsername);
+  const username = useSelector(selectMyUsername);
   if (username) {
     return (
       <IconButton size="small" color="inherit" onClick={logOut}>

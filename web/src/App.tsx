@@ -4,6 +4,7 @@ import {
   Route,
   Switch,
 } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { NavBar } from './NavBar/NavBar';
 import { Home } from './Home/Home';
 import { Calendar } from './Calendar/Calendar';
@@ -16,12 +17,16 @@ import { SignIn } from './Auth/SignIn/component';
 import { SignUp } from './Auth/SignUp/component';
 import { EnterConfirmationCode } from './Auth/EnterConfirmationCode/component';
 import { checkExistingUserSession } from './Auth/actions';
+import { checkAndFetchMyProfile } from './Profile/actions';
+import { selectMyProfile } from './Profile/selectors';
 
 // login();
 
 function App() {
+  const myProfile = useSelector(selectMyProfile);
   useEffect(() => {
-    checkExistingUserSession();
+    checkExistingUserSession()
+      // .then(checkAndFetchMyProfile);
   }, []);
   return (
     <div>

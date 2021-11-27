@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux';
 import { configureStore } from '@reduxjs/toolkit';
 
-import profile from './slices/profile';
+import profile from './Profile/store';
 import auth from './Auth/store';
 
 const rootReducer = combineReducers({

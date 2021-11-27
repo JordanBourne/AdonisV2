@@ -1,5 +1,4 @@
 import { store } from '../store';
-import * as AWS from "aws-sdk";
 import * as AmazonCognitoIdentity from 'amazon-cognito-identity-js';
 
 import { UserPoolId, UserPoolClientId, IdentityPoolId } from './Cognito/config';
@@ -7,7 +6,7 @@ import { UserPoolId, UserPoolClientId, IdentityPoolId } from './Cognito/config';
 import { SetCognitoUserAction } from './action-symbols';
 
 export const checkExistingUserSession = async () => {
-  var userPool = new AmazonCognitoIdentity.CognitoUserPool({
+  const userPool = new AmazonCognitoIdentity.CognitoUserPool({
     UserPoolId,
     ClientId: UserPoolClientId,
   });
@@ -32,17 +31,6 @@ export const checkExistingUserSession = async () => {
     console.log(`Checking if session is valid: ${sessionIsValid}`);
 
     if (sessionIsValid) {
-      AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-        IdentityPoolId,
-        Logins: {
-          [`cognito-idp.us-west-2.amazonaws.com/${UserPoolId}`]:
-            session
-              .getIdToken()
-              .getJwtToken(),
-        },
-      });
-
-
       store.dispatch(SetCognitoUserAction(cognitoUser));
     }
   }

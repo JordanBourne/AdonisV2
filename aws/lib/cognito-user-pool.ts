@@ -3,9 +3,11 @@
 import * as cdk from '@aws-cdk/core';
 import * as cognito from '@aws-cdk/aws-cognito';
 import * as iam from '@aws-cdk/aws-iam';
+import * as dynamodb from '@aws-cdk/aws-dynamodb';
 
 interface CreateProfilesTableProps {
     prefix: string;
+    ProfilesTable: dynamodb.Table;
 };
 
 export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfilesTableProps) => {
@@ -52,6 +54,24 @@ export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfile
         ],
         resources: ["*"],
     }));
+
+    authenticatedRole.addToPolicy(new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+            'dynamodb:DeleteItem',
+            'dynamodb:GetItem',
+            'dynamodb:PutItem',
+            'dynamodb:Query',
+            'dynamodb:UpdateItem'
+        ],
+        resources: [props.ProfilesTable.tableArn],
+        conditions: {
+            'ForAllValues:StringEquals': {
+                'dynamodb:LeadingKeys': ['${cognito-identity.amazonaws.com:sub}']
+            }
+        }
+    }));
+
     const defaultPolicy = new cognito.CfnIdentityPoolRoleAttachment(scope, `${props.prefix}CognitoDefaultPolicy`, {
         identityPoolId: identityPool.ref,
         roles: {
