@@ -37,13 +37,7 @@ export const getCognitoUserSession = async (): Promise<AmazonCognitoIdentity.Cog
   return null;
 };
 
-export const getCognitoIdentityCredentials = async (): Promise<CognitoIdentityCredentialProvider | null> => {
-  const cognitoUserSession = await getCognitoUserSession();
-  if (cognitoUserSession === null) {
-    return null;
-  }
-
-
+export const getCognitoIdentityId = async (cognitoUserSession: AmazonCognitoIdentity.CognitoUserSession): Promise<string | null> => {
   const cognitoIdentityClient = new CognitoIdentityClient({
     region: 'us-west-2'
   });
@@ -60,6 +54,20 @@ export const getCognitoIdentityCredentials = async (): Promise<CognitoIdentityCr
 
   if (!IdentityId) {
     throw new Error('Could not obtain identity id');
+  }
+
+  return IdentityId;
+};
+
+export const getCognitoIdentityCredentials = async (): Promise<CognitoIdentityCredentialProvider | null> => {
+  const cognitoUserSession = await getCognitoUserSession();
+  if (cognitoUserSession === null) {
+    return null;
+  }
+
+  const IdentityId = await(getCognitoIdentityId(cognitoUserSession));
+  if (IdentityId === null) {
+    return null;
   }
 
   // Calling this function might refresh the credentials

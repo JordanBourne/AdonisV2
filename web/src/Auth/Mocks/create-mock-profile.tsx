@@ -1,7 +1,8 @@
-import { lift, program, SBS_RTF, trainingMax } from './workout';
-import type { profile } from './Profile/types';
+import { lift, program, SBS_RTF, trainingMax } from '../../workout';
+import type { profile } from '../../Profile/types';
+import { setMyProfile } from '../../Profile/actions';
 
-export const myProfile: profile = {
+const mockProfile : profile = {
   lifts: {},
   completedWorkouts: {},
   program: SBS_RTF,
@@ -69,3 +70,7 @@ export const myProfile: profile = {
     }],
   }
 }
+
+export const createMockProfile = async() => {
+    await setMyProfile(mockProfile);
+};

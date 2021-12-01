@@ -6,6 +6,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import * as styles from './styles';
 import { signUp } from './actions';
 import { useHistory } from 'react-router-dom';
+import { checkAndFetchMyProfile } from '../../Profile/actions';
 const LockOutlinedIcon = LockOutlined;
 
 const theme = createTheme();
@@ -67,10 +68,9 @@ export const SignUp = () => {
             username: username as string,
             email: email as string,
             password: password as string,
-            dispatch,
-            history
+            dispatch
         }).then(() => {
-            setIsSuccess(true);
+            history.push('/enter-confirmation-code');
         });
         return false;
     };

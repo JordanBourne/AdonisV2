@@ -4,7 +4,7 @@ export const SetMyProfile = 'profile/set-my-profile';
 export const SetMyProfileAction = (myProfile : profile|null) => {
     return {
         myProfile,
-        type: 'auth/set-cognito-user'
+        type: SetMyProfile
     };
 };
 

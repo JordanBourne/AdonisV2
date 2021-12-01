@@ -119,9 +119,7 @@ export const Workout = () => {
 
   useEffect(() => {
     if (
-      myProfile.completedWorkouts &&
-      myProfile.completedWorkouts[week] &&
-      myProfile.completedWorkouts[week][day]
+      myProfile?.completedWorkouts?.[week]?.[day]
     ) {
       setCurrentWorkout(myProfile.completedWorkouts[week][day]);
       const completedWorkout: {[key: string]: number[]} = {};

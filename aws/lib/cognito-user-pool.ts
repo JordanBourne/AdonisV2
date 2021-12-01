@@ -64,7 +64,7 @@ export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfile
             'dynamodb:Query',
             'dynamodb:UpdateItem'
         ],
-        resources: [props.ProfilesTable.tableArn],
+        resources: [ props.ProfilesTable.tableArn ],
         conditions: {
             'ForAllValues:StringEquals': {
                 'dynamodb:LeadingKeys': ['${cognito-identity.amazonaws.com:sub}']

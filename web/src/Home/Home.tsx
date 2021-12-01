@@ -1,8 +1,8 @@
 import { Grid, Typography } from '@mui/material';
-
-import { myProfile } from '../profile';
+import { useSelector } from 'react-redux';
 import { titleCaseString } from '../util/textUtil';
 import { getCurrentWorkout, getLastWorkout, workout } from '../util/workoutUtil';
+import { selectMyProfile } from '../Profile/selectors';
 
 const styles = {
   backgroundStyle: {
@@ -48,6 +48,13 @@ const styles = {
 }
 
 export const Home = () => {
+  const myProfile = useSelector(selectMyProfile);
+  console.log(myProfile);
+  if (!myProfile) {
+    return (<span>
+      You need to log in before viewing this page
+    </span>);
+  }
   const todaysWorkout: workout[] = getCurrentWorkout(myProfile);
   const yesterdaysWorkout: workout[] = getLastWorkout(myProfile);
 

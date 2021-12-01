@@ -8,10 +8,9 @@ type ParametersSignup = {
     email: string;
     password: string;
     dispatch: any;
-    history: any;
 };
 
-export const signUp = async({username, email, password, dispatch, history} : ParametersSignup) : Promise<void> => {
+export const signUp = async({username, email, password, dispatch} : ParametersSignup) : Promise<void> => {
     const userPool = new AmazonCognitoIdentity.CognitoUserPool({
         UserPoolId,
         ClientId: UserPoolClientId
@@ -37,6 +36,4 @@ export const signUp = async({username, email, password, dispatch, history} : Par
     });
 
     dispatch(SetCognitoUserAction(cognitoUser));
-
-    history.push('/enter-confirmation-code');
 };

@@ -24,6 +24,7 @@ export const SignInButton = () => {
 };
 
 export const NavBar = () => {
+  const username = useSelector(selectMyUsername);
   return (
     <Box>
       <AppBar position="static">
@@ -38,18 +39,18 @@ export const NavBar = () => {
           <Box sx={{ flexGrow: 1 }} />
           <Box>
             <SignInButton />
-            <IconButton size="small" color="inherit">
+            {username && (<IconButton size="small" color="inherit">
               <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/home">Home</NavLink>
-            </IconButton>
-            <IconButton size="small" color="inherit">
+            </IconButton>)}
+            {username && (<IconButton size="small" color="inherit">
               <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/workout">Workout</NavLink>
-            </IconButton>
-            <IconButton size="small" color="inherit">
+            </IconButton>)}
+            {username && (<IconButton size="small" color="inherit">
               <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/programs">Programs</NavLink>
-            </IconButton>
-            <IconButton size="small" color="inherit">
+            </IconButton>)}
+            {username && (<IconButton size="small" color="inherit">
               <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/calendar">Calendar</NavLink>
-            </IconButton>
+            </IconButton>)}
           </Box>
         </Toolbar>
       </AppBar>

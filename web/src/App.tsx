@@ -19,15 +19,14 @@ import { EnterConfirmationCode } from './Auth/EnterConfirmationCode/component';
 import { checkExistingUserSession } from './Auth/actions';
 import { SetMyProfileAction } from './Profile/action-symbols';
 import { selectMyProfile } from './Profile/selectors';
-import { myProfile } from './profile';
+import { checkAndFetchMyProfile } from './Profile/actions';
 
 // login();
 
 function App() {
-  const myProfile = useSelector(selectMyProfile);
   useEffect(() => {
     checkExistingUserSession()
-      // .then(checkAndFetchMyProfile);
+      .then(checkAndFetchMyProfile);
   }, []);
   return (
     <div>
