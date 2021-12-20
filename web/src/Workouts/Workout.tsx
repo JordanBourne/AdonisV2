@@ -1,5 +1,6 @@
 import { SetStateAction, useState } from 'react';
 import { Grid, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import { SetButton } from '../Set/component';
 
 import { calculateNewTrainingMaxes, calculateUpdatedLifts, constructCompletedWorkout, getWorkoutForDay, validateWorkoutCompleted, workout } from '../util/workoutUtil';
 import { useEffect } from 'react';
@@ -131,18 +132,6 @@ export const Workout = () => {
     }
   }, [week, day, myProfile]);
 
-  const updateSet = (movement: string, setNumber: number) => {
-    if (!completedSets[movement]) {
-      completedSets[movement] = [setNumber];
-    } else if (!completedSets[movement].includes(setNumber)) {
-      completedSets[movement].push(setNumber);
-    } else {
-      completedSets[movement] = completedSets[movement].filter((val: number) => val !== setNumber);
-    }
-    
-    setCompletedSets({...completedSets});
-  };
-
   const addRep = (workout: workout) => {
     if (lastSetReps[workout.name]) {
       setLastSetReps({...lastSetReps, [workout.name]: lastSetReps[workout.name] + 1});
@@ -218,15 +207,7 @@ export const Workout = () => {
               <Typography sx={styles.movementWeight}>{workout.weight + ' lbs'}</Typography>
             </Grid>
             <Grid item sx={styles.setContainer}>
-              {workout.sets.map((set: number, index: number) => {
-                const completed = completedSets[workout.name] && completedSets[workout.name].includes(index);
-                const repCount = index === workout.sets.length - 1 ? 
-                  (lastSetReps[workout.name] ? lastSetReps[workout.name] : set) :
-                  set;
-                return (
-                  <Grid item key={`${workout.name} - set - ${index}`} sx={{...styles.setCounter, ...(completed ? styles.completedSet : {})}} onClick={() => updateSet(workout.name, index)}>{repCount}</Grid>
-                )
-              })}
+              { workout.sets.map((set: number, index: number) => ( <SetButton workout={workout} week={week} day={day} index={index} set={set} /> ) ) }
               <Grid item key={`${workout.name}-add`} sx={styles.setRepButton} onClick={() => addRep(workout)}>+</Grid>
               <Grid item key={`${workout.name}-minus`} sx={styles.setRepButton} onClick={() => minusRep(workout)}>-</Grid>
             </Grid>

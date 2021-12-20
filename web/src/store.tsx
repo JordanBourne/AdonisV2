@@ -2,6 +2,7 @@ import { combineReducers, applyMiddleware } from 'redux';
 import { createStore } from '@reduxjs/toolkit';
 
 import profile from './Profile/store';
+import set from './Set/store';
 import auth from './Auth/store';
 
 const loggerMiddleware = (storeAPI : any) => (next : any) => (action : any) => {
@@ -14,6 +15,7 @@ const loggerMiddleware = (storeAPI : any) => (next : any) => (action : any) => {
 }
 
 const rootReducer = combineReducers({
+  sets: set,
   profile,
   auth
 });

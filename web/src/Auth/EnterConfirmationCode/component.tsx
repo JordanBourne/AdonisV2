@@ -8,6 +8,7 @@ import { confirmRegistration } from './actions';
 import * as styles from './styles';
 import { selectMyUsername } from '../selectors';
 import { createMockProfile } from '../Mocks/create-mock-profile';
+import { createMockSbsRtf } from '../../Programs/dynamodb';
 import { checkAndFetchMyProfile } from '../../Profile/actions';
 const LockOutlinedIcon = LockOutlined;
 
@@ -47,6 +48,8 @@ export const EnterConfirmationCode = () => {
             setIsSuccess(true);
         }).then(() => {
             return createMockProfile();
+        }).then(() => {
+            return createMockSbsRtf();
         }).then(() => {
             return checkAndFetchMyProfile();
         }).then(() => {
