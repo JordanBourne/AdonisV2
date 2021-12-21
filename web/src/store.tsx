@@ -2,8 +2,9 @@ import { combineReducers, applyMiddleware } from 'redux';
 import { createStore } from '@reduxjs/toolkit';
 
 import profile from './Profile/store';
-import set from './Set/store';
+import set from './Sets/store';
 import auth from './Auth/store';
+import allPrograms from './Programs/all-programs-store';
 
 const loggerMiddleware = (storeAPI : any) => (next : any) => (action : any) => {
   let result = next(action)
@@ -17,7 +18,8 @@ const loggerMiddleware = (storeAPI : any) => (next : any) => (action : any) => {
 const rootReducer = combineReducers({
   sets: set,
   profile,
-  auth
+  auth,
+  allPrograms
 });
 
 

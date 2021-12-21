@@ -6,7 +6,6 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import * as styles from './styles';
 import { signUp } from './actions';
 import { useHistory } from 'react-router-dom';
-import { checkAndFetchMyProfile } from '../../Profile/actions';
 const LockOutlinedIcon = LockOutlined;
 
 const theme = createTheme();

@@ -7,9 +7,6 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { confirmRegistration } from './actions';
 import * as styles from './styles';
 import { selectMyUsername } from '../selectors';
-import { createMockProfile } from '../Mocks/create-mock-profile';
-import { createMockSbsRtf } from '../../Programs/dynamodb';
-import { checkAndFetchMyProfile } from '../../Profile/actions';
 const LockOutlinedIcon = LockOutlined;
 
 const theme = createTheme();
@@ -46,12 +43,6 @@ export const EnterConfirmationCode = () => {
             username: username as string,
         }).then(() => {
             setIsSuccess(true);
-        }).then(() => {
-            return createMockProfile();
-        }).then(() => {
-            return createMockSbsRtf();
-        }).then(() => {
-            return checkAndFetchMyProfile();
         }).then(() => {
             history.push('/signin');
         });

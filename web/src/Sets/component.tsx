@@ -1,7 +1,6 @@
 import { SetStateAction, useState } from 'react';
 import { Grid, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 
-import { calculateNewTrainingMaxes, calculateUpdatedLifts, constructCompletedWorkout, getWorkoutForDay, validateWorkoutCompleted, workout } from '../util/workoutUtil';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { titleCaseString } from '../util/textUtil';
@@ -29,26 +28,24 @@ const styles = {
     }
 }
 
-type SetButtonProps = { workout: workout, week: number, day: number, index: number};
+type SetButtonProps = { setId: string; };
 
 export const SetButton = (props : SetButtonProps) => {
-    const set = useSelector(selectSet({ workoutName: props.workout.name, week: props.week, day: props.day, index: props.index }))
+    const set = useSelector(selectSet(props.setId));
 
     useEffect(() => {
-        fetchSet(
-            props.workout.name,
-            props.week,
-            props.day,
-            props.index
-        )
+        fetchSet(props.setId);
     }, []);
+
+    if (!set) return null;
 
     return (
         <Grid
             item
-            key={`${props.workout.name} - set - ${props.index}`}
+            key={props.setId}
             sx={{ ...styles.setCounter, ...(set.repsCompleted !== null ? styles.completedSet : {}) }}
-            onClick={() => updateSet(props.workout.name, props.index)}>
+            // onClick={() => updateSet(props.workout.name, props.index)}
+            >
             {set.repsCompleted ?? set.repsExpected}
         </Grid>
     )

@@ -8,8 +8,8 @@ import { useSelector } from 'react-redux';
 import { NavBar } from './NavBar/NavBar';
 import { Home } from './Home/Home';
 import { Calendar } from './Calendar/Calendar';
-import { Programs } from './Programs/Programs';
-import { Workout } from './Workout/Workout';
+import { Programs } from './Programs/component';
+import { Workout } from './Workouts/Workout';
 import './app.css';
 import { store } from './store'
 import { Provider } from 'react-redux'
@@ -19,14 +19,16 @@ import { EnterConfirmationCode } from './Auth/EnterConfirmationCode/component';
 import { checkExistingUserSession } from './Auth/actions';
 import { SetMyProfileAction } from './Profile/action-symbols';
 import { selectMyProfile } from './Profile/selectors';
-import { checkAndFetchMyProfile } from './Profile/actions';
+import { fetchMyProfile } from './Profile/actions';
+import { loadMockSbsRtf } from './Programs/actions';
 
 // login();
 
 function App() {
   useEffect(() => {
     checkExistingUserSession()
-      .then(checkAndFetchMyProfile);
+      .then(loadMockSbsRtf)
+      .then(fetchMyProfile);
   }, []);
   return (
     <div>

@@ -1,7 +1,6 @@
 import { store } from '../store';
-import { selectMyUsername } from '../Auth/selectors';
 import { SetMyProfileAction } from './action-symbols';
-import { profile, completedWorkout, } from './types';
+import { ProfileDb, completedWorkout, } from './types';
 import { trainingMax, lift } from '../Programs/types';
 import { getAuthenticatedDynamoDBClient } from '../util/dynamo';
 
@@ -9,22 +8,17 @@ import { GetItemCommand, PutItemCommand, DynamoDBClient } from "@aws-sdk/client-
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { DynamoDBTableName } from './config';
 
-export const checkAndFetchMyProfile = async () => {
-    const myUsername = selectMyUsername(store.getState());
-    if (myUsername) {
-        const myProfile: profile = await fetchProfile(myUsername) as profile;
-        store.dispatch(SetMyProfileAction(myProfile));
-    }
-};
-
-export const fetchProfile = async (username: string): Promise<profile | null> => {
+export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
     try {
+        console.group('FetchProfile');
         const output = await getAuthenticatedDynamoDBClient();
         if (output === null) {
+            console.groupEnd();
             throw ('Could not retrieve set since the client is not logged in, fetchProfile should not have been called yet.');
         }
         const { cognitoIdentityId, dynamoDbClient } = output;
         const command = new GetItemCommand({
+            ConsistentRead: true,
             Key: {
                 cognitoIdentityId: {
                     'S': `${cognitoIdentityId}`
@@ -33,14 +27,37 @@ export const fetchProfile = async (username: string): Promise<profile | null> =>
             TableName: DynamoDBTableName
         });
         const response = await dynamoDbClient.send(command);
-        const responseItem = unmarshall(response?.Item ?? {}) as profile | null;
+        const responseItem = response?.Item ? unmarshall(response.Item) as ProfileDb : null;
+        if (responseItem === null) {
+            console.log('Profile not found');
+            console.groupEnd();
+            throw({
+                code: 'PROFILE_NOT_FOUND'
+            });
+        }
+        console.log('Profile has been found');
+        console.log(responseItem);
+        store.dispatch(SetMyProfileAction(responseItem));
+        console.groupEnd();
         return responseItem;
     } catch (e) {
         throw (e);
     }
 };
 
-export const setMyProfile = async (myProfile: profile): Promise<void> => {
+export const createProfile = async () => {
+    await setMyProfile({
+        programRegistrationId: null,
+        week: null,
+        day: null,
+        roundingSettings: {
+            rounding: 5,
+            microPlates: false
+        }
+    });
+};
+
+export const setMyProfile = async (myProfile: ProfileDb): Promise<void> => {
     const output = await getAuthenticatedDynamoDBClient();
     if (output === null) {
         throw ('Could not retrieve set since the client is not logged in, fetchProfile should not have been called yet.');
@@ -49,7 +66,7 @@ export const setMyProfile = async (myProfile: profile): Promise<void> => {
     const command = new PutItemCommand({
         Item: marshall({
             ...myProfile,
-            username: `${cognitoIdentityId}`
+            cognitoIdentityId: `${cognitoIdentityId}`
         }),
         TableName: DynamoDBTableName
     });

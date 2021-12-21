@@ -217,7 +217,13 @@ export const SBS_RTF_SET_SCHEME: setScheme = {
 
 
 export const SBS_RTF: ProgramDto = {
+    title: 'SBS RTF',
     name: 'Stronger by Science - Reps to Failure',
+    descriptions: [
+        '21 weeks',
+        '5 days per week',
+        'Upper/Lower focus'
+    ],
     movements: ['p1', 'p2', 'p3', 'p4', 'p1a1', 'p1a2', 'p2a1', 'p2a1', 'p3a1', 'p4a1'],
     daysPerWeek: {
         4: {

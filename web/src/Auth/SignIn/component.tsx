@@ -3,8 +3,7 @@ import { Avatar, Button, CssBaseline, TextField, FormControlLabel, Checkbox, Lin
 import { LockOutlined } from '@mui/icons-material';
 import { signIn } from './actions';
 import { useHistory } from 'react-router-dom';
-import { checkAndFetchMyProfile } from '../../Profile/actions';
-import { createMockProfile } from '../Mocks/create-mock-profile';
+import { fetchMyProfile, createProfile } from '../../Profile/actions';
 const LockOutlinedIcon = LockOutlined;
 
 export const SignIn = () => {
@@ -49,9 +48,16 @@ export const SignIn = () => {
       username: username as string,
       password: password as string
     }).then(() => {
-      return createMockProfile();
+      return fetchMyProfile()
+       .catch((error : any) => {
+        if (error?.code === 'PROFILE_NOT_FOUND') {
+          return createProfile();
+        }
+        throw(error);
+       })
     }).then(() => {
-      checkAndFetchMyProfile();
+      return fetchMyProfile();
+    }).then(() => {
       history.push('/home');
     });
     return false;

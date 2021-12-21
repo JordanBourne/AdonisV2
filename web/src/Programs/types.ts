@@ -1,5 +1,7 @@
 export interface ProgramDto {
     name: string;
+    title: string;
+    descriptions: string[];
     movements: string[];
     daysPerWeek: {
         [key: number]: weekMovements;

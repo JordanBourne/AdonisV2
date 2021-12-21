@@ -1,4 +1,4 @@
-import { getAuthenticatedDynamoDBClient } from '../util/dynamo';
+import { sendDynamoCommand } from '../util/dynamo';
 import { SetDb } from './types';
 
 import { GetItemCommand, UpdateItemCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
@@ -8,29 +8,24 @@ import { DynamoDBTableName } from './config';
 import * as RootStore from '../store';
 
 import { SetIsFetchedActionFn } from './action-symbols';
-import { getSetSortKey } from './util';
 
 export const fetchSet = async (setId: string): Promise<void> => {
-  const output = await getAuthenticatedDynamoDBClient();
-  if (output === null) {
-    throw ('Could not retrieve set since the client is not logged in, fetchSet should not have been called yet.');
-  }
-  const { cognitoIdentityCredentials, cognitoIdentityId, dynamoDbClient } = output;
-  if (!cognitoIdentityId) {
-    throw('Unauthenticated user, fetchSet should not have been called');
-  }
-  const command = new GetItemCommand({
-    Key: {
-      cognitoIdentityId: {
-        'S': cognitoIdentityId
+  const response = await sendDynamoCommand(
+    new GetItemCommand({
+      Key: {
+        cognitoIdentityId: {
+          'S': 'COGNITO_IDENTITY_ID'
+        },
+        setId: {
+          'S': setId
+        }
       },
-      setId: {
-        'S': setId
-      }
-    },
-    TableName: DynamoDBTableName
-  });
-  const response = await dynamoDbClient.send(command);
+      TableName: DynamoDBTableName
+    }),
+    (command: any, cognitoIdentityId: string) => {
+      command.input.Key.cognitoIdentityId['S'] = cognitoIdentityId;
+    }
+  );
   const responseItem = unmarshall(response?.Item ?? {}) as SetDb | null;
   if (responseItem !== null) {
     RootStore.store.dispatch(
@@ -39,24 +34,17 @@ export const fetchSet = async (setId: string): Promise<void> => {
   }
 };
 export const updateRepsCompleted = async (setId: string): Promise<void> => {
-  const output = await getAuthenticatedDynamoDBClient();
-  if (output === null) {
-    throw ('Could not retrieve set since the client is not logged in, fetchSet should not have been called yet.');
-  }
-  const { cognitoIdentityCredentials, cognitoIdentityId, dynamoDbClient } = output;
-  if (!cognitoIdentityId) {
-    throw('Unauthenticated user, fetchSet should not have been called');
-  }
-  const command = new UpdateItemCommand({
+  await sendDynamoCommand(new UpdateItemCommand({
     Key: {
       cognitoIdentityId: {
-        'S': cognitoIdentityId
+        'S': 'COGNITO_IDENTITY_ID'
       },
       setId: {
         'S': setId
       }
     },
     TableName: DynamoDBTableName
+  }), (command: any, cognitoIdentityId: string) => {
+    command.input.Key.cognitoIdentityId['S'] = cognitoIdentityId;
   });
-  await dynamoDbClient.send(command);
 };
