@@ -17,7 +17,11 @@ export const getAuthenticatedDynamoDBClient = async () => {
     return { dynamoDbClient, cognitoIdentityCredentials, cognitoIdentityId };
 };
 
-export const sendDynamoCommand = async (command: any, updateCommandWithCognitoIdentityId? : (command : any, cognitoIdentityId : string) => void) : Promise<any> => {
+const addCognitoIdentityIdToCommand = (command: any, cognitoIdentityId: string) => {
+    command.input.Key.cognitoIdentityId['S'] = cognitoIdentityId;
+};
+
+export const sendDynamoCommand = async (command: any, updateCommandWithCognitoIdentityId : (command : any, cognitoIdentityId : string) => void = addCognitoIdentityIdToCommand) : Promise<any> => {
     const output = await getAuthenticatedDynamoDBClient();
     if (output === null) {
         throw ('Could not reach out to dynamo since the client hasnt authenticated. This function should not have been called.');

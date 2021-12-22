@@ -1,4 +1,5 @@
 import { ProgramDb } from './types';
-export const registerForProgram = (program : ProgramDb) => {
-    
+import { createProgramRegistrationObject } from '../ProgramRegistration/actions';
+export const registerForProgram = async (program : ProgramDb) => {
+    await createProgramRegistrationObject(program);
 };

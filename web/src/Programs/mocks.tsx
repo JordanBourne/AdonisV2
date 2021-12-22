@@ -221,11 +221,17 @@ export const SBS_RTF: ProgramDto = {
     name: 'Stronger by Science - Reps to Failure',
     descriptions: [
         '21 weeks',
-        '5 days per week',
+        '4 or 5 days per week',
         'Upper/Lower focus'
     ],
-    movements: ['p1', 'p2', 'p3', 'p4', 'p1a1', 'p1a2', 'p2a1', 'p2a1', 'p3a1', 'p4a1'],
     daysPerWeek: {
+        5: {
+            1: ['p1', 'p1a1'],
+            2: ['p2', 'p2a1'],
+            3: ['p3', 'p3a1'],
+            4: ['p4', 'p4a1'],
+            5: ['p5', 'p5a1']
+        },
         4: {
             1: ['p1', 'p2a2', 'p3a1'],
             2: ['p2', 'p1a1', 'p4a1'],
@@ -234,4 +240,8 @@ export const SBS_RTF: ProgramDto = {
         }
     },
     setScheme: SBS_RTF_SET_SCHEME
-}
+};
+
+export const mockMovementDefinitions = () => {
+
+};

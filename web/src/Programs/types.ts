@@ -2,7 +2,6 @@ export interface ProgramDto {
     name: string;
     title: string;
     descriptions: string[];
-    movements: string[];
     daysPerWeek: {
         [key: number]: weekMovements;
     };
@@ -46,3 +45,15 @@ export interface setScheme {
         [key: number]: weightScheme;
     };
 }
+
+
+// not a real object. Just making this for now.
+export interface MockMovementDto {
+    movement: string;
+    startingOneRepMax: number;
+};
+
+export const MockSquatMovementDto : MockMovementDto = {
+    movement: 'SQUAT',
+    startingOneRepMax: 500
+};
