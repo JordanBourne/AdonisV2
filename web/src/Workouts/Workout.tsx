@@ -5,7 +5,7 @@ import { SetButton } from '../Sets/component';
 
 // import { calculateNewTrainingMaxes, calculateUpdatedLifts, constructCompletedWorkout, getWorkoutForDay, validateWorkoutCompleted, workout } from '../util/workoutUtil';
 import { useEffect } from 'react';
-import { groupBy } from 'lodash';
+import { groupBy, uniq, orderBy } from 'lodash';
 import { useSelector } from 'react-redux';
 import { titleCaseString } from '../util/textUtil';
 import { useAppDispatch, useAppSelector } from '../hooks';
@@ -158,14 +158,11 @@ export const Workout = () => {
   const week: number | null = (searchParams.get("week") ? Number(searchParams.get("week")) : null) ?? myProfile?.week ?? null;
   const day: number | null = (searchParams.get("day") ? Number(searchParams.get("day")) : null) ?? myProfile?.day ?? null;
   const programRegistrationId: string | null = searchParams.get("programRegistrationId") ?? myProfile?.programRegistrationId ?? null;
-  const sets = useSelector(selectSetsForDay({ week, day, programRegistrationId }));
-  console.log(sets);
-  const setsByMovement : { [key: string]: SetDb[] } = groupBy(sets, 'movement');
-  console.log(setsByMovement)
-  const movements : string[] = [];//setsByMovement.keys();
+  const sets = orderBy( useSelector(selectSetsForDay({ week, day, programRegistrationId })), ['week', 'day', 'index'] );
+  const setsByMovement : { [key: string]: SetDb[] } = groupBy(sets, 'movement') as { [key: string]: SetDb[] };
+  const movements : string[] = uniq(sets.map( s => s.movement));
   const profile = useSelector(selectMyProfile);
   const program = useSelector(selectProgram(profile?.programId));
-  const dispatch = useAppDispatch();
   if (!programRegistrationId
     || !week
     || !day
@@ -216,17 +213,17 @@ export const Workout = () => {
           </Grid>
         </Grid>
         {movements.map((movement: string) => {
-          // <Grid item container sx={styles.movementsContainer} key={movement}>
-          //   <Grid item>
-          //     <Typography sx={styles.movementName}>{titleCaseString(movement)}</Typography>
-          //     <Typography sx={styles.movementWeight}>{workout.weight + ' lbs'}</Typography>
-          //   </Grid>
-          //   <Grid item sx={styles.setContainer}>
-          //     {sets.map((set: number, index: number) => (<SetButton setId={set.setId} />))}
-          //     <Grid item key={`${set.setId}-add`} sx={styles.setRepButton} onClick={() => addRep(workout)}>+</Grid>
-          //     <Grid item key={`${set.setId}-minus`} sx={styles.setRepButton} onClick={() => minusRep(workout)}>-</Grid>
-          //   </Grid>
-          // </Grid>
+          return (<Grid item container sx={styles.movementsContainer} key={movement}>
+            <Grid item>
+              <Typography sx={styles.movementName}>{titleCaseString(movement)}</Typography>
+              {/* <Typography sx={styles.movementWeight}>{workout.weight + ' lbs'}</Typography> */}
+            </Grid>
+            <Grid item sx={styles.setContainer}>
+              {setsByMovement[movement].map((set: SetDb) => (<SetButton setId={set.setId} />))}
+              {/* <Grid item key={`${set.setId}-add`} sx={styles.setRepButton} onClick={() => addRep(workout)}>+</Grid>
+              <Grid item key={`${set.setId}-minus`} sx={styles.setRepButton} onClick={() => minusRep(workout)}>-</Grid> */}
+            </Grid>
+          </Grid>);
         })}
         {/* <button onClick={completeWorkout}>complete workout placeholder button</button> */}
       </Grid>

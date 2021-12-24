@@ -1,7 +1,8 @@
 import { sendDynamoCommand, getAuthenticatedDynamoDBClient } from '../util/dynamo';
 import { SetDb } from './types';
 
-import { GetItemCommand, UpdateItemCommand, QueryCommand, BatchWriteItemCommand, PutRequest } from "@aws-sdk/client-dynamodb";
+import { pick } from 'lodash';
+import { GetItemCommand, UpdateItemCommand, QueryCommand, BatchWriteItemCommand, PutRequest, BatchGetItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { DynamoDBTableName, DynamoDBTodayIndexName } from './config';
 
@@ -89,12 +90,21 @@ export const fetchSetsForDay = async (props: FetchSetsForDayProps, LastEvaluated
         },
         IndexName: DynamoDBTodayIndexName,
         TableName: DynamoDBTableName,
-        ExclusiveStartKey: LastEvaluatedKey
+        ExclusiveStartKey: LastEvaluatedKey,
+        Limit: 15,
     });
     const queryResults = await sendDynamoCommand( queryCommand, addCognitoIdentityIdToQuery );
-    for (const item of queryResults.Items) {
+    const batchGetItemCommand = new BatchGetItemCommand({
+        RequestItems: {
+            [DynamoDBTableName]: {
+                Keys: queryResults.Items.map((item : SetDb) => pick(item, ['cognitoIdentityId', 'setId']))
+            }
+        }
+    });
+    const batchGetItemCommandResults = await sendDynamoCommand( batchGetItemCommand, null );
+    for (const item of batchGetItemCommandResults.Responses[DynamoDBTableName]) {
         RootStore.store.dispatch(
-            SetIsFetchedActionFn(item)
+            SetIsFetchedActionFn(unmarshall(item) as SetDb)
         );
     }
     if (queryResults.LastEvaluatedKey) {

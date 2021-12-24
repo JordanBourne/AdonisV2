@@ -12,7 +12,7 @@ export default function authReducers(state = initialState, action: any) {
     case SetIsFetched:
       return {
         ...state,
-        [action.set.sortKey]: action.set
+        [action.set.setId]: action.set
       };
     default:
       return state

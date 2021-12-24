@@ -71,7 +71,7 @@ export const registerProfileToProgramRegistrationObject = async (programRegistra
         Key: {
             'cognitoIdentityId': { 'S': 'COGNITO_IDENTITY_ID' }
         },
-        UpdateExpression: 'SET week=:week, #day=:day, programRegistrationId=:programRegistrationId',
+        UpdateExpression: 'SET week=:week, #day=:day, programRegistrationId=:programRegistrationId, programId=:programId',
         ExpressionAttributeValues: {
             ':week': { 'N': '1' },
             ':day': { 'N': '1' },
