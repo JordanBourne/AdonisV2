@@ -1,7 +1,7 @@
-import { sendDynamoCommand } from '../util/dynamo';
+import { sendDynamoCommand, getAuthenticatedDynamoDBClient } from '../util/dynamo';
 import { SetDb } from './types';
 
-import { GetItemCommand, UpdateItemCommand, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { GetItemCommand, UpdateItemCommand, PutItemCommand, BatchWriteItemCommand, PutRequest } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { DynamoDBTableName } from './config';
 
@@ -9,12 +9,12 @@ import * as RootStore from '../store';
 
 import { SetIsFetchedActionFn } from './action-symbols';
 
-import { ProgramDb, MockMovementDto } from '../Programs/types';
+import { ProgramDb, MovementDto } from '../Programs/types';
 import { ProgramRegistrationDb } from '../ProgramRegistration/types';
 const { v4: uuidv4 } = require('uuid');
 
-interface CreateSetFromProgramObjectProps {
-    movementDto: MockMovementDto;
+export interface CreateSetFromProgramObjectProps {
+    movementDto: MovementDto;
     program: ProgramDb;
     programRegistration: ProgramRegistrationDb;
     day: number;
@@ -22,27 +22,52 @@ interface CreateSetFromProgramObjectProps {
     index: number;
     percentOrm: number;
     repsExpected: number;
-    repsCompleted: number;
 };
 
-export const createSetFromProgramObject = async (props: CreateSetFromProgramObjectProps): Promise<void> => {
-    const setDb: SetDb = {
-        cognitoId: 'COGNITO_IDENTITY_ID',
-        uniqueId: uuidv4(),
-        programId: props.program.programId,
-        programRegistrationId: props.programRegistration.programRegistrationId,
-        movement: props.movementDto.movement,
-        day: props.day,
-        week: props.week,
-        index: props.index,
-        percentOrm: props.percentOrm,
-        repsExpected: props.repsExpected,
-        repsCompleted: null
-    };
-    await sendDynamoCommand(new PutItemCommand({
-        Item: marshall( setDb ),
-        TableName: DynamoDBTableName
-    }));
+export const createChunkOfSets = async (chunk: CreateSetFromProgramObjectProps[]): Promise<void> => {    
+    const output = await getAuthenticatedDynamoDBClient();
+    if (output === null) {
+        throw ('Could not reach out to dynamo since the client hasnt authenticated. This function should not have been called.');
+    }
+    const { cognitoIdentityCredentials, cognitoIdentityId, dynamoDbClient } = output;
+    if (!cognitoIdentityId) {
+        throw ('Could not reach out to dynamo since the client hasnt authenticated. This function should not have been called.');
+    }
+
+    const sets : SetDb[] = [];
+    const batchWriteItemCommand = new BatchWriteItemCommand({
+        RequestItems: {
+            [DynamoDBTableName]: chunk.map(set => {
+                const item : SetDb = {
+                    cognitoIdentityId: cognitoIdentityId,
+                    setId: uuidv4(),
+                    programId: set.program.programId,
+                    programRegistrationId: set.programRegistration.programRegistrationId,
+                    movement: set.movementDto.movement,
+                    day: set.day,
+                    week: set.week,
+                    index: set.index,
+                    percentOrm: set.percentOrm,
+                    repsExpected: set.repsExpected,
+                    repsCompleted: null
+                }
+                console.log(item);
+                sets.push(item);
+                const putRequest : PutRequest = {
+                    Item: marshall(item)
+                };
+                return {
+                    PutRequest: putRequest
+                };
+            })
+        }
+    });
+    await sendDynamoCommand( batchWriteItemCommand, null );
+    for (const setDb of sets) {
+        RootStore.store.dispatch(
+            SetIsFetchedActionFn(setDb)
+        );
+    }
 };
 
 export const fetchSet = async (setId: string): Promise<void> => {

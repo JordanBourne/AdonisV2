@@ -1,4 +1,5 @@
 import { ProgramDto, setScheme } from './types';
+import { fromPairs } from 'lodash';
 
 export const SBS_RTF_SET_SCHEME: setScheme = {
     weeks: {
@@ -242,6 +243,18 @@ export const SBS_RTF: ProgramDto = {
     setScheme: SBS_RTF_SET_SCHEME
 };
 
-export const mockMovementDefinitions = () => {
+export const allPossibleMovementAssignments = [
+    'p1', 'p1a1', 'p1a2',
+    'p2', 'p2a1', 'p2a2',
+    'p3', 'p3a1',
+    'p4', 'p4a1',
+    'p5', 'p5a1',
+];
 
-};
+export const createMockDto = (assignment : string) => ({
+    movement: 'SQUAT',
+    startingOneRepMax: 500,
+    assignment
+});
+
+export const movementsConfiguration = fromPairs(allPossibleMovementAssignments.map(assignment => [assignment, createMockDto(assignment)]));

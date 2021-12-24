@@ -1,6 +1,6 @@
 export interface SetDb {
-    cognitoId: string;
-    uniqueId: string;
+    cognitoIdentityId: string;
+    setId: string;
     programId: string;
     programRegistrationId: string;
     movement: string;
@@ -13,14 +13,14 @@ export interface SetDb {
 };
 
 export interface ProfileDb {
-  cognitoId: string;
+  cognitoIdentityId: string;
   currentWorkoutId: string;
   week: number;
   day: number;
 };
 
 export interface OrmDb {
-  cognitoId: string;
+  cognitoIdentityId: string;
   movement: string;
   weight: number;
   reps: number;

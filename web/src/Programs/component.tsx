@@ -6,6 +6,7 @@ import { BallotOutlined } from '@mui/icons-material';
 
 import { registerForProgram } from './component-actions';
 import { selectAllPrograms } from './selectors';
+import { movementsConfiguration } from './mocks';
 
 const styles = {
     setCounter: {
@@ -64,7 +65,8 @@ export const Programs = () => {
                                 </Typography>
                             </CardContent>
                             <CardActions>
-                                <Button size="small" onClick={() => registerForProgram(program)}>Register</Button>
+                                <Button size="small" onClick={() => registerForProgram(program, 4, movementsConfiguration)}>Register (4)</Button>
+                                <Button size="small" onClick={() => registerForProgram(program, 5, movementsConfiguration)}>Register (5)</Button>
                             </CardActions>
                         </Card>
                     ))}

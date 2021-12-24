@@ -1,4 +1,4 @@
-import { GetItemCommand, UpdateItemCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { GetItemCommand, PutItemCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { DynamoDBTableName } from './config';
 import { sendDynamoCommand } from "../util/dynamo";
@@ -13,8 +13,9 @@ export const createProgramRegistrationObject = async (program : ProgramDb) => {
         programRegistrationId: uuidv4(),
         programId: program.programId
     };
-    await sendDynamoCommand(new UpdateItemCommand({
-      Key: marshall(programRegistration),
+    await sendDynamoCommand(new PutItemCommand({
+      Item: marshall(programRegistration),
       TableName: DynamoDBTableName
     }));
+    return programRegistration;
 };

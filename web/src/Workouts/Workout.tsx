@@ -96,6 +96,7 @@ const styles = {
 
 export const Workout = () => {
   const myProfile = useSelector(selectMyProfile);
+  console.log(myProfile);
   const dispatch = useAppDispatch();
   // const [week, setWeek]: [number, Dispatch<SetStateAction<number>>] = useState(myProfile ? myProfile.programSettings.week : 1);
   // const [day, setDay]: [number, Dispatch<SetStateAction<number>>] = useState(myProfile ? myProfile.programSettings.day : 1);

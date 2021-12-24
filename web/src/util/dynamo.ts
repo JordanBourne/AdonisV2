@@ -1,5 +1,17 @@
 import { getCredentialsAndId } from '../Auth/util';
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { queue } from 'async';
+
+interface RateLimitedTask {
+    dynamoDbClient: DynamoDBClient,
+    command: any
+}
+
+const DynamoRateLimiting = queue(async(task : RateLimitedTask) => {
+    console.log('starting');
+    await task.dynamoDbClient.send(task.command);
+    console.log('finishing');
+}, 10);
 
 export const getAuthenticatedDynamoDBClient = async () => {
     const output = await getCredentialsAndId();
@@ -18,10 +30,15 @@ export const getAuthenticatedDynamoDBClient = async () => {
 };
 
 const addCognitoIdentityIdToCommand = (command: any, cognitoIdentityId: string) => {
-    command.input.Key.cognitoIdentityId['S'] = cognitoIdentityId;
+    if (command.input.Key) {
+        command.input.Key.cognitoIdentityId['S'] = cognitoIdentityId;
+    }
+    if (command.input.Item) {
+        command.input.Item.cognitoIdentityId['S'] = cognitoIdentityId;
+    }
 };
 
-export const sendDynamoCommand = async (command: any, updateCommandWithCognitoIdentityId : (command : any, cognitoIdentityId : string) => void = addCognitoIdentityIdToCommand) : Promise<any> => {
+export const sendDynamoCommand = async (command: any, updateCommandWithCognitoIdentityId : ((command : any, cognitoIdentityId : string) => void) | null = addCognitoIdentityIdToCommand) : Promise<any> => {
     const output = await getAuthenticatedDynamoDBClient();
     if (output === null) {
         throw ('Could not reach out to dynamo since the client hasnt authenticated. This function should not have been called.');
@@ -33,5 +50,8 @@ export const sendDynamoCommand = async (command: any, updateCommandWithCognitoId
     if (updateCommandWithCognitoIdentityId) {
         updateCommandWithCognitoIdentityId(command, cognitoIdentityId);
     }
-    await dynamoDbClient.send(command);
+    await DynamoRateLimiting.push({
+        dynamoDbClient,
+        command
+    });
 };

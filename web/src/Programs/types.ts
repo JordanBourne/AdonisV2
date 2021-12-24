@@ -46,14 +46,8 @@ export interface setScheme {
     };
 }
 
-
-// not a real object. Just making this for now.
-export interface MockMovementDto {
+export interface MovementDto {
     movement: string;
     startingOneRepMax: number;
-};
-
-export const MockSquatMovementDto : MockMovementDto = {
-    movement: 'SQUAT',
-    startingOneRepMax: 500
+    assignment: 'p1' | 'p2' | 'p1a1' | 'etc' | string;
 };
