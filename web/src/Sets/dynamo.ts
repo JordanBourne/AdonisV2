@@ -1,9 +1,9 @@
 import { sendDynamoCommand, getAuthenticatedDynamoDBClient } from '../util/dynamo';
 import { SetDb } from './types';
 
-import { GetItemCommand, UpdateItemCommand, PutItemCommand, BatchWriteItemCommand, PutRequest } from "@aws-sdk/client-dynamodb";
+import { GetItemCommand, UpdateItemCommand, QueryCommand, BatchWriteItemCommand, PutRequest } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import { DynamoDBTableName } from './config';
+import { DynamoDBTableName, DynamoDBTodayIndexName } from './config';
 
 import * as RootStore from '../store';
 
@@ -43,6 +43,7 @@ export const createChunkOfSets = async (chunk: CreateSetFromProgramObjectProps[]
                     setId: uuidv4(),
                     programId: set.program.programId,
                     programRegistrationId: set.programRegistration.programRegistrationId,
+                    programRegistrationIdWeekDay: `${set.programRegistration.programRegistrationId}-${set.week}-${set.day}`,
                     movement: set.movementDto.movement,
                     day: set.day,
                     week: set.week,
@@ -67,6 +68,37 @@ export const createChunkOfSets = async (chunk: CreateSetFromProgramObjectProps[]
         RootStore.store.dispatch(
             SetIsFetchedActionFn(setDb)
         );
+    }
+};
+
+const addCognitoIdentityIdToQuery = (command: QueryCommand, cognitoIdentityId: string) => {
+    ((command.input.ExpressionAttributeValues || {})[':cognitoIdentityId'] || {})['S'] = cognitoIdentityId;
+};
+
+export interface FetchSetsForDayProps {
+    week: number;
+    day: number;
+    programRegistrationId: string;
+};
+export const fetchSetsForDay = async (props: FetchSetsForDayProps, LastEvaluatedKey?: any ): Promise<void> => {    
+    const queryCommand = new QueryCommand({
+        KeyConditionExpression: 'cognitoIdentityId = :cognitoIdentityId and programRegistrationIdWeekDay = :programRegistrationIdWeekDay',
+        ExpressionAttributeValues: {
+            ':cognitoIdentityId': { 'S': 'COGNITO_IDENTITY_ID' },
+            ':programRegistrationIdWeekDay': { 'S': `${props.programRegistrationId}-${props.week}-${props.day}` }
+        },
+        IndexName: DynamoDBTodayIndexName,
+        TableName: DynamoDBTableName,
+        ExclusiveStartKey: LastEvaluatedKey
+    });
+    const queryResults = await sendDynamoCommand( queryCommand, addCognitoIdentityIdToQuery );
+    for (const item of queryResults.Items) {
+        RootStore.store.dispatch(
+            SetIsFetchedActionFn(item)
+        );
+    }
+    if (queryResults.LastEvaluatedKey) {
+        await fetchSetsForDay(props, queryResults.LastEvaluatedKey);
     }
 };
 

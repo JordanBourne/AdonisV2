@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Route,
-  Switch,
+  Routes,
 } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { NavBar } from './NavBar/NavBar';
@@ -10,6 +10,7 @@ import { Home } from './Home/Home';
 import { Calendar } from './Calendar/Calendar';
 import { Programs } from './Programs/component';
 import { Workout } from './Workouts/Workout';
+import { fetchSetsForDay } from './Sets/dynamo';
 import './app.css';
 import { store } from './store'
 import { Provider } from 'react-redux'
@@ -25,39 +26,42 @@ import { loadMockSbsRtf } from './Programs/actions';
 // login();
 
 function App() {
+  const profile = useSelector(selectMyProfile);
   useEffect(() => {
     checkExistingUserSession()
       .then(loadMockSbsRtf)
-      .then(fetchMyProfile);
+      .then(fetchMyProfile)
+      .then(() => {
+        const profile = selectMyProfile(store.getState());
+        console.log(profile);
+        if (profile
+          && profile?.programRegistrationId
+          && profile?.week
+          && profile?.day) {
+            console.log('exists!');
+          fetchSetsForDay({
+            programRegistrationId: profile.programRegistrationId,
+            week: profile.week,
+            day: profile.day
+          });
+        }
+      })
   }, []);
   return (
     <div>
       <Provider store={store}>
         <Router >
           <NavBar />
-          <Switch>
-            <Route path="/signup">
-              <SignUp />
-            </Route>
-            <Route path="/enter-confirmation-code">
-              <EnterConfirmationCode />
-            </Route>
-            <Route path="/signin">
-              <SignIn />
-            </Route>
-            <Route path="/calendar">
-              <Calendar />
-            </Route>
-            <Route path="/programs">
-              <Programs />
-            </Route>
-            <Route path="/workout">
-              <Workout />
-            </Route>
-            <Route path="/">
-              <Home />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/enter-confirmation-code" element={<EnterConfirmationCode />} />
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/programs" element={<Programs />} />
+            <Route path="/workout" element={<Workout />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
+          </Routes>
         </Router>
       </Provider>
     </div>

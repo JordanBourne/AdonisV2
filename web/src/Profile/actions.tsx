@@ -2,31 +2,28 @@ import { store } from '../store';
 import { SetMyProfileAction } from './action-symbols';
 import { ProfileDb, completedWorkout, } from './types';
 import { trainingMax, lift } from '../Programs/types';
-import { getAuthenticatedDynamoDBClient } from '../util/dynamo';
+import { sendDynamoCommand } from '../util/dynamo';
 
-import { GetItemCommand, PutItemCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { GetItemCommand, PutItemCommand, DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { DynamoDBTableName } from './config';
+import { ProgramRegistrationDb } from '../ProgramRegistration/types';
 
 export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
     try {
         console.group('FetchProfile');
-        const output = await getAuthenticatedDynamoDBClient();
-        if (output === null) {
-            console.groupEnd();
-            throw ('Could not retrieve set since the client is not logged in, fetchProfile should not have been called yet.');
-        }
-        const { cognitoIdentityId, dynamoDbClient } = output;
         const command = new GetItemCommand({
             ConsistentRead: true,
             Key: {
                 cognitoIdentityId: {
-                    'S': `${cognitoIdentityId}`
+                    'S': 'COGNITO_IDENTITY_ID'
                 }
             },
             TableName: DynamoDBTableName
         });
-        const response = await dynamoDbClient.send(command);
+        const response = await sendDynamoCommand(command);
+        console.log(command.input.Key);
+        console.log(response);
         const responseItem = response?.Item ? unmarshall(response.Item) as ProfileDb : null;
         if (responseItem === null) {
             console.log('Profile not found');
@@ -48,6 +45,7 @@ export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
 export const createProfile = async () => {
     await setMyProfile({
         programRegistrationId: null,
+        programId: null,
         week: null,
         day: null,
         roundingSettings: {
@@ -58,19 +56,34 @@ export const createProfile = async () => {
 };
 
 export const setMyProfile = async (myProfile: ProfileDb): Promise<void> => {
-    const output = await getAuthenticatedDynamoDBClient();
-    if (output === null) {
-        throw ('Could not retrieve set since the client is not logged in, fetchProfile should not have been called yet.');
-    }
-    const { cognitoIdentityId, dynamoDbClient } = output;
     const command = new PutItemCommand({
         Item: marshall({
             ...myProfile,
-            cognitoIdentityId: `${cognitoIdentityId}`
+            cognitoIdentityId: 'COGNITO_IDENTITY_ID'
         }),
         TableName: DynamoDBTableName
     });
-    await dynamoDbClient.send(command);
+    await sendDynamoCommand(command);
+};
+
+export const registerProfileToProgramRegistrationObject = async (programRegistration: ProgramRegistrationDb): Promise<void> => {
+    const command = new UpdateItemCommand({
+        Key: {
+            'cognitoIdentityId': { 'S': 'COGNITO_IDENTITY_ID' }
+        },
+        UpdateExpression: 'SET week=:week, #day=:day, programRegistrationId=:programRegistrationId',
+        ExpressionAttributeValues: {
+            ':week': { 'N': '1' },
+            ':day': { 'N': '1' },
+            ':programRegistrationId': { 'S': programRegistration.programRegistrationId },
+            ':programId': { 'S': programRegistration.programId }
+        },
+        ExpressionAttributeNames: {
+            '#day': 'day',
+        },
+        TableName: DynamoDBTableName
+    });
+    await sendDynamoCommand(command);
 };
 
 export const completeWorkout = (

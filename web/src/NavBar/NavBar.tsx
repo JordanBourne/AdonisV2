@@ -18,7 +18,7 @@ export const SignInButton = () => {
   }
   return (
     <IconButton size="small" color="inherit">
-      <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/signin">Sign in</NavLink>
+      <NavLink style={isActive => isActive ? { textDecoration: 'underline' } : {}} className="navBarButton" to="/signin">Sign in</NavLink>
     </IconButton>
   );
 };
@@ -40,16 +40,16 @@ export const NavBar = () => {
           <Box>
             <SignInButton />
             {username && (<IconButton size="small" color="inherit">
-              <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/home">Home</NavLink>
+              <NavLink style={isActive => isActive ? { textDecoration: 'underline' } : {}} className="navBarButton" to="/home">Home</NavLink>
             </IconButton>)}
             {username && (<IconButton size="small" color="inherit">
-              <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/workout">Workout</NavLink>
+              <NavLink style={isActive => isActive ? { textDecoration: 'underline' } : {}} className="navBarButton" to="/workout">Workout</NavLink>
             </IconButton>)}
             {username && (<IconButton size="small" color="inherit">
-              <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/programs">Programs</NavLink>
+              <NavLink style={isActive => isActive ? { textDecoration: 'underline' } : {}} className="navBarButton" to="/programs">Programs</NavLink>
             </IconButton>)}
             {username && (<IconButton size="small" color="inherit">
-              <NavLink activeStyle={{ textDecoration: 'underline' }} className="navBarButton" to="/calendar">Calendar</NavLink>
+              <NavLink style={isActive => isActive ? { textDecoration: 'underline' } : {}} className="navBarButton" to="/calendar">Calendar</NavLink>
             </IconButton>)}
           </Box>
         </Toolbar>

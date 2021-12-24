@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Avatar, Button, CssBaseline, TextField, FormControlLabel, Checkbox, Link, Grid, Box, Typography, Container } from '@mui/material';
 import { LockOutlined } from '@mui/icons-material';
 import { signIn } from './actions';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { fetchMyProfile, createProfile } from '../../Profile/actions';
 const LockOutlinedIcon = LockOutlined;
 
 export const SignIn = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [usernameErrorText, setUsernameErrorText] = useState('');
   const [passwordErrorText, setPasswordErrorText] = useState('');
   const validateUsername = (event: React.FormEvent<HTMLFormElement>) => {
@@ -58,7 +58,7 @@ export const SignIn = () => {
     }).then(() => {
       return fetchMyProfile();
     }).then(() => {
-      history.push('/home');
+      navigate('/home');
     });
     return false;
   };

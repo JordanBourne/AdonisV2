@@ -25,6 +25,7 @@ export interface completedWorkout {
 
 export interface ProfileDb {
     programRegistrationId: string|null;
+    programId: string|null;
     week: number|null;
     day: number|null;
     roundingSettings: roundingSettings;

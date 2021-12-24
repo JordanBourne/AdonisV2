@@ -3,6 +3,7 @@ export interface SetDb {
     setId: string;
     programId: string;
     programRegistrationId: string;
+    programRegistrationIdWeekDay: string;
     movement: string;
     day: number;
     week: number;

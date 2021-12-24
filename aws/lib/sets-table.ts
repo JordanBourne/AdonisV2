@@ -34,8 +34,27 @@ export const createSetsTable = (scope: cdk.Construct, props: CreateSetsTableProp
         projectionType: dynamodb.ProjectionType.KEYS_ONLY
     });
 
+    const setsTableTodayIndexName = `${props.prefix}SetsTableTodayIndex`;
+    
+    SetsTable.addGlobalSecondaryIndex({
+        partitionKey: {
+            name: 'cognitoIdentityId',
+            type: dynamodb.AttributeType.STRING
+        },
+        sortKey: {
+            name: 'programRegistrationIdWeekDay',
+            type: dynamodb.AttributeType.STRING
+        },
+        indexName: setsTableTodayIndexName,
+        projectionType: dynamodb.ProjectionType.KEYS_ONLY
+    });
+
     const setsTableNameOutput = new cdk.CfnOutput(scope, `${props.prefix}SetsTableNameOutput`, {
         value: SetsTable.tableName
+    });
+
+    const setsTableTodayIndexNameOutput = new cdk.CfnOutput(scope, `${props.prefix}SetsTableTodayIndexNameOutput`, {
+        value: setsTableTodayIndexName
     });
 
     return { SetsTable };

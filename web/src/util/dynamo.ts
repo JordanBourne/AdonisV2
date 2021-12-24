@@ -1,5 +1,5 @@
 import { getCredentialsAndId } from '../Auth/util';
-import { DynamoDBClient, PutItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand, UpdateItemCommand, BatchGetItemCommand } from "@aws-sdk/client-dynamodb";
 import { queue } from 'async';
 
 interface RateLimitedTask {
@@ -9,8 +9,9 @@ interface RateLimitedTask {
 
 const DynamoRateLimiting = queue(async(task : RateLimitedTask) => {
     console.log('starting');
-    await task.dynamoDbClient.send(task.command);
+    const output = await task.dynamoDbClient.send(task.command);
     console.log('finishing');
+    return output;
 }, 10);
 
 export const getAuthenticatedDynamoDBClient = async () => {
@@ -50,7 +51,7 @@ export const sendDynamoCommand = async (command: any, updateCommandWithCognitoId
     if (updateCommandWithCognitoIdentityId) {
         updateCommandWithCognitoIdentityId(command, cognitoIdentityId);
     }
-    await DynamoRateLimiting.push({
+    return await DynamoRateLimiting.push({
         dynamoDbClient,
         command
     });
