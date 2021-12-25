@@ -4,17 +4,11 @@ import { BallotOutlined } from '@mui/icons-material';
 import { SetButton } from '../Sets/component';
 import { useNavigate } from 'react-router';
 
-// import { calculateNewTrainingMaxes, calculateUpdatedLifts, constructCompletedWorkout, getWorkoutForDay, validateWorkoutCompleted, workout } from '../util/workoutUtil';
 import { useEffect } from 'react';
-import { groupBy, uniq, orderBy } from 'lodash';
+import { groupBy, uniq, orderBy, last } from 'lodash';
 import { useSelector } from 'react-redux';
 import { titleCaseString } from '../util/textUtil';
-import { useAppDispatch, useAppSelector } from '../hooks';
 import { selectMyProfile } from '../Profile/selectors';
-import { workout } from '../util/workoutUtil';
-import * as profileActions from '../Profile/actions';
-import { Dispatch } from 'react';
-import { ObjectEntries } from '../util/util';
 import { useSearchParams } from 'react-router-dom';
 import { selectSetsForDay } from '../Sets/selectors';
 import { fetchSetsForDay } from '../Sets/dynamo';
@@ -23,139 +17,11 @@ import { selectAllOrmsByMovement } from '../Orms/selectors';
 import { selectProgramRegistration } from '../ProgramRegistrations/selectors';
 import { SetDb } from '../Sets/types';
 import { OrmDb } from '../Orms/types';
+import { styles } from './styles';
 
-const styles = {
-    page: {
-        padding: '20px'
-    },
-    contentContainer: {
-        backgroundColor: 'white',
-        border: '1px solid #BBB',
-        margin: 'auto',
-        maxWidth: '800px'
-    },
-    workoutContainerTitle: {
-        borderBottom: '1px solid #4F4F4F',
-        margin: '10px',
-        color: '#4F4F4F',
-        width: '100%',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-    },
-    workoutTitle: {
-        fontSize: '2em',
-    },
-    daySelector: {
-        justifyContent: 'center',
-        padding: '5px'
-    },
-    dayDropdown: {
-        marginLeft: '10px',
-        marginRight: '10px',
-        marginBottom: '5px'
-    },
-    dropdown: {
-        backgroundColor: 'white'
-    },
-    dropdownContainer: {
-    },
-    movementsContainer: {
-        justifyContent: 'space-between',
-        padding: '10px'
-    },
-    movementName: {
-        fontSize: '1.125em',
-        padding: '0px',
-        width: '100%',
-        marginBottom: '-2px'
-    },
-    movementWeight: {
-        fontSize: '1em',
-        padding: '0px',
-        width: '100%'
-    },
-    setCounter: {
-        border: '1px solid #AAA',
-        height: '40px',
-        width: '40px',
-        borderRadius: '20px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        margin: '0 5px 0 5px'
-    },
-    setRepButton: {
-        border: '1px solid #AAA',
-        height: '20px',
-        width: '20px',
-        borderRadius: '20px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        margin: '0 5px 0 5px'
-    },
-    setContainer: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        cursor: 'pointer'
-    },
-    completedSet: {
-        backgroundColor: '#0bdd0861'
-    }
-}
-
-const NeedToRegisterForProgram = () => {
-    return (
-        <Container component="main" maxWidth="xs">
-            <CssBaseline />
-            <Box
-                sx={{
-                    marginTop: 8,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                }}
-            >
-                <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                    <BallotOutlined />
-                </Avatar>
-                <Typography component="h1" variant="h5">
-                    Workout
-                </Typography>
-                <Box sx={{ mt: 1 }}>
-                    You need to register for a program before you can view this page.
-                </Box>
-            </Box>
-        </Container>
-    );
-};
-
-const NeedToSignIn = () => {
-    return (
-        <Container component="main" maxWidth="xs">
-            <CssBaseline />
-            <Box
-                sx={{
-                    marginTop: 8,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                }}
-            >
-                <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                    <BallotOutlined />
-                </Avatar>
-                <Typography component="h1" variant="h5">
-                    Workout
-                </Typography>
-                <Box sx={{ mt: 1 }}>
-                    You need to sign in or sign up.
-                </Box>
-            </Box>
-        </Container>
-    );
-};
+import { NeedToRegisterForProgram } from './need-to-register-for-program';
+import { NeedToSignIn } from './need-to-sign-in';
+import { addRep, minusRep, completeWorkout } from './component-actions';
 
 export const Workout = () => {
     const navigate = useNavigate();
@@ -246,12 +112,12 @@ export const Workout = () => {
                         </Grid>
                         <Grid item sx={styles.setContainer}>
                             {setsByMovement[movement].map((set: SetDb) => (<SetButton setId={set.setId} />))}
-                            {/* <Grid item key={`${set.setId}-add`} sx={styles.setRepButton} onClick={() => addRep(workout)}>+</Grid>
-              <Grid item key={`${set.setId}-minus`} sx={styles.setRepButton} onClick={() => minusRep(workout)}>-</Grid> */}
+                            <Grid item key={`${movement}-add`} sx={styles.setRepButton} onClick={() => addRep(last(setsByMovement[movement]))}>+</Grid>
+                            <Grid item key={`${movement}-minus`} sx={styles.setRepButton} onClick={() => minusRep(last(setsByMovement[movement]))}>-</Grid>
                         </Grid>
                     </Grid>);
                 })}
-                {/* <button onClick={completeWorkout}>complete workout placeholder button</button> */}
+                <button onClick={completeWorkout}>complete workout placeholder button</button>
             </Grid>
         </Grid>
     )

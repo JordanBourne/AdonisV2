@@ -1,19 +1,29 @@
 import { ProgramDb } from './types';
 import { createProgramRegistrationObject } from '../ProgramRegistrations/actions';
 import { registerProfileToProgramRegistrationObject } from '../Profile/actions';
-import { createChunkOfSets, CreateSetFromProgramObjectProps } from '../Sets/dynamo';
+import { batchAndSaveSetsToDb } from '../Sets/dynamo';
+import { SetDb } from '../Sets/types';
 import { MovementDto } from './types';
-import { chunk } from 'lodash';
+import { getAuthenticatedDynamoDBClient } from '../util/dynamo';
+import * as uuid from 'uuid';
 
 interface MovementsConfiguration {
     [ key: string ]: MovementDto
 };
 
-export const registerForProgram = async (program : ProgramDb, daysPerWeek : number, movementsConfiguration : MovementsConfiguration) => {
+export const registerForProgram = async (program : ProgramDb, daysPerWeek : number, movementsConfiguration : MovementsConfiguration) => {    
+    const output = await getAuthenticatedDynamoDBClient();
+    if (output === null) {
+        throw ('Could not reach out to dynamo since the client hasnt authenticated. This function should not have been called.');
+    }
+    const { cognitoIdentityCredentials, cognitoIdentityId, dynamoDbClient } = output;
+    if (!cognitoIdentityId) {
+        throw ('Could not reach out to dynamo since the client hasnt authenticated. This function should not have been called.');
+    }
     console.log('Creating program registration');
     const programRegistrationDb = await createProgramRegistrationObject(program, daysPerWeek);
     await registerProfileToProgramRegistrationObject(programRegistrationDb);
-    const allSets : CreateSetFromProgramObjectProps[] = []
+    const allSets : SetDb[] = []
     for (const weekIdx in program.setScheme.weeks) {
         const week = program.setScheme.weeks[weekIdx];
         for (const dayIdx in program.daysPerWeek[daysPerWeek]) {
@@ -23,19 +33,25 @@ export const registerForProgram = async (program : ProgramDb, daysPerWeek : numb
                 for (const setIdx in week.primary.sets) {
                     const repsExpected = week[primaryAuxiliary].sets[setIdx];
                     allSets.push({
-                        movementDto: movementsConfiguration[movementAssignment],
-                        program,
-                        programRegistration: programRegistrationDb,
+                        cognitoIdentityId: cognitoIdentityId,
+                        setId: uuid.v4(),
+                        programId: program.programId,
+                        programRegistrationId: programRegistrationDb.programRegistrationId,
+                        programRegistrationIdWeekDay: `${programRegistrationDb.programRegistrationId}-${week}-${day}`,
+                        movement: movementsConfiguration[movementAssignment].movement,
                         day: Number(dayIdx),
                         week: Number(weekIdx),
                         index: Number(setIdx),
                         percentOrm: week.primary.percent,
-                        repsExpected,
+                        repsExpected: repsExpected,
+                        repsCompleted: null
                     })
                 }
             }
         }
     }
+
+    
     console.log('Creating sets');
-    await Promise.all(chunk(allSets, 25).map(createChunkOfSets));
+    await batchAndSaveSetsToDb(allSets);
 };

@@ -12,7 +12,12 @@ import { SetIsFetchedActionFn } from './action-symbols';
 
 import { ProgramDb, MovementDto } from '../Programs/types';
 import { ProgramRegistrationDb } from '../ProgramRegistrations/types';
+import { chunk } from 'lodash';
 const { v4: uuidv4 } = require('uuid');
+
+export const batchAndSaveSetsToDb = async(sets: SetDb[]) => {
+    await Promise.all(chunk(sets, 25).map(createChunkOfSets));
+};
 
 export interface CreateSetFromProgramObjectProps {
     movementDto: MovementDto;
@@ -25,38 +30,12 @@ export interface CreateSetFromProgramObjectProps {
     repsExpected: number;
 };
 
-export const createChunkOfSets = async (chunk: CreateSetFromProgramObjectProps[]): Promise<void> => {    
-    const output = await getAuthenticatedDynamoDBClient();
-    if (output === null) {
-        throw ('Could not reach out to dynamo since the client hasnt authenticated. This function should not have been called.');
-    }
-    const { cognitoIdentityCredentials, cognitoIdentityId, dynamoDbClient } = output;
-    if (!cognitoIdentityId) {
-        throw ('Could not reach out to dynamo since the client hasnt authenticated. This function should not have been called.');
-    }
-
-    const sets : SetDb[] = [];
+export const createChunkOfSets = async (sets: SetDb[]): Promise<void> => {
     const batchWriteItemCommand = new BatchWriteItemCommand({
         RequestItems: {
-            [DynamoDBTableName]: chunk.map(set => {
-                const item : SetDb = {
-                    cognitoIdentityId: cognitoIdentityId,
-                    setId: uuidv4(),
-                    programId: set.program.programId,
-                    programRegistrationId: set.programRegistration.programRegistrationId,
-                    programRegistrationIdWeekDay: `${set.programRegistration.programRegistrationId}-${set.week}-${set.day}`,
-                    movement: set.movementDto.movement,
-                    day: set.day,
-                    week: set.week,
-                    index: set.index,
-                    percentOrm: set.percentOrm,
-                    repsExpected: set.repsExpected,
-                    repsCompleted: null
-                }
-                console.log(item);
-                sets.push(item);
+            [DynamoDBTableName]: sets.map(set => {
                 const putRequest : PutRequest = {
-                    Item: marshall(item)
+                    Item: marshall(set)
                 };
                 return {
                     PutRequest: putRequest
@@ -127,6 +106,7 @@ export const fetchSet = async (setId: string): Promise<void> => {
         );
     }
 };
+
 export const updateRepsCompleted = async (setId: string): Promise<void> => {
     await sendDynamoCommand(new UpdateItemCommand({
         Key: marshall({

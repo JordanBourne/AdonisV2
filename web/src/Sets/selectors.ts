@@ -26,3 +26,5 @@ export const selectSetsForDay = (props: SelectSetsForDayProps) => (state: RootSt
     console.groupEnd();
     return sets;
 };
+
+export const selectAllModifiedSetIds = (state: RootState) => Object.keys(state.unsavedSetChanges);

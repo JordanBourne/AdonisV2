@@ -1,11 +1,11 @@
 import { SetIsFetched } from './action-symbols';
 import { SetDb } from './types';
 
-interface MySetsState{
-    [key: string]: SetDb
+interface MySetsState {
+  [key: string]: SetDb
 };
 
-const initialState : MySetsState = { };
+const initialState: MySetsState = {};
 
 export default function authReducers(state = initialState, action: any) {
   switch (action.type) {
