@@ -11,6 +11,7 @@ import { Dispatch } from 'react';
 import { ObjectEntries } from '../util/util';
 import { fetchSet } from './dynamo';
 import { selectSet } from './selectors';
+import { setCompleted } from './component-actions';
 
 const styles = {
     setCounter: {
@@ -33,18 +34,12 @@ type SetButtonProps = { setId: string; };
 export const SetButton = (props : SetButtonProps) => {
     const set = useSelector(selectSet(props.setId));
 
-    useEffect(() => {
-        fetchSet(props.setId);
-    }, []);
-
-    if (!set) return null;
-
     return (
         <Grid
             item
             key={props.setId}
             sx={{ ...styles.setCounter, ...(set.repsCompleted !== null ? styles.completedSet : {}) }}
-            // onClick={() => updateSet(props.workout.name, props.index)}
+            onClick={() => setCompleted(set)}
             >
             {set.repsCompleted ?? set.repsExpected}
         </Grid>

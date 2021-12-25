@@ -7,7 +7,7 @@ import { sendDynamoCommand } from '../util/dynamo';
 import { GetItemCommand, PutItemCommand, DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { DynamoDBTableName } from './config';
-import { ProgramRegistrationDb } from '../ProgramRegistration/types';
+import { ProgramRegistrationDb } from '../ProgramRegistrations/types';
 
 export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
     try {

@@ -251,8 +251,23 @@ export const allPossibleMovementAssignments = [
     'p5', 'p5a1',
 ];
 
+export const mockAssignments: { [key: string]: string } = {
+    'p1': 'Squat',
+    'p1a1': 'Incline Press',
+    'p1a2': 'Close Grip Bench Press',
+    'p2': 'BENCH PRESS',
+    'p2a1': 'Box Squat',
+    'p2a2': 'Pistol Squats',
+    'p3': 'OHP',
+    'p3a1': 'Preacher Curls',
+    'p4': 'DEADLIFT',
+    'p4a1': 'Bent Row',
+    'p5': 'LEG PRESS',
+    'p5a1': 'Meadows Rows',
+};
+
 export const createMockDto = (assignment : string) => ({
-    movement: 'SQUAT',
+    movement: mockAssignments[assignment],
     startingOneRepMax: 500,
     assignment
 });

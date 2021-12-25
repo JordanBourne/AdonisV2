@@ -11,7 +11,7 @@ import * as RootStore from '../store';
 import { SetIsFetchedActionFn } from './action-symbols';
 
 import { ProgramDb, MovementDto } from '../Programs/types';
-import { ProgramRegistrationDb } from '../ProgramRegistration/types';
+import { ProgramRegistrationDb } from '../ProgramRegistrations/types';
 const { v4: uuidv4 } = require('uuid');
 
 export interface CreateSetFromProgramObjectProps {

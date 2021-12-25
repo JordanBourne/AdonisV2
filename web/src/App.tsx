@@ -21,7 +21,10 @@ import { checkExistingUserSession } from './Auth/actions';
 import { SetMyProfileAction } from './Profile/action-symbols';
 import { selectMyProfile } from './Profile/selectors';
 import { fetchMyProfile } from './Profile/actions';
+import { fetchProgramRegistration } from './ProgramRegistrations/actions';
 import { loadMockSbsRtf } from './Programs/actions';
+import { populateMockOrms } from './Orms/actions';
+import { ProfileDb } from './Profile/types';
 
 // login();
 
@@ -31,21 +34,12 @@ function App() {
     checkExistingUserSession()
       .then(loadMockSbsRtf)
       .then(fetchMyProfile)
-      .then(() => {
-        const profile = selectMyProfile(store.getState());
-        console.log(profile);
-        if (profile
-          && profile?.programRegistrationId
-          && profile?.week
-          && profile?.day) {
-            console.log('exists!');
-          fetchSetsForDay({
-            programRegistrationId: profile.programRegistrationId,
-            week: profile.week,
-            day: profile.day
-          });
+      .then((myProfile: ProfileDb|null) => {
+        if (myProfile?.programRegistrationId) {
+          return fetchProgramRegistration(myProfile.programRegistrationId);
         }
       })
+      .then(populateMockOrms)
   }, []);
   return (
     <div>

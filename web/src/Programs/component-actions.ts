@@ -1,5 +1,5 @@
 import { ProgramDb } from './types';
-import { createProgramRegistrationObject } from '../ProgramRegistration/actions';
+import { createProgramRegistrationObject } from '../ProgramRegistrations/actions';
 import { registerProfileToProgramRegistrationObject } from '../Profile/actions';
 import { createChunkOfSets, CreateSetFromProgramObjectProps } from '../Sets/dynamo';
 import { MovementDto } from './types';
@@ -11,7 +11,7 @@ interface MovementsConfiguration {
 
 export const registerForProgram = async (program : ProgramDb, daysPerWeek : number, movementsConfiguration : MovementsConfiguration) => {
     console.log('Creating program registration');
-    const programRegistrationDb = await createProgramRegistrationObject(program);
+    const programRegistrationDb = await createProgramRegistrationObject(program, daysPerWeek);
     await registerProfileToProgramRegistrationObject(programRegistrationDb);
     const allSets : CreateSetFromProgramObjectProps[] = []
     for (const weekIdx in program.setScheme.weeks) {
