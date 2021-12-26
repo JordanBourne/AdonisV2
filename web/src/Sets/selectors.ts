@@ -12,11 +12,9 @@ export const selectSetsForDay = (props: SelectSetsForDayProps) => (state: RootSt
         return [];
     }
     console.group('selectSetsForDay');
-    console.log(props);
     const sets : SetDb[] = [];
     for (const setId in state.sets) {
         const set = state.sets[setId];
-        console.log(set);
         if (set.week === props.week
             && set.day === props.day
             && set.programRegistrationId === props.programRegistrationId) {

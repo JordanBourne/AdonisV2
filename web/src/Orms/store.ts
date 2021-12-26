@@ -14,7 +14,7 @@ export default function authReducers(state = initialState, action: any) {
         case OrmIsFetched:
             const newOrmsByMovement = { ...state.ormsByMovement };
             const oldOrm = newOrmsByMovement[ action.ormDb.movement ];
-            if (!oldOrm || action.ormDb.updatedAt >= oldOrm.updatedAt) {
+            if (!oldOrm || action.ormDb.updatedAtIso >= oldOrm.updatedAtIso) {
                 newOrmsByMovement[action.ormDb.movement] = action.ormDb;
             }
             return {

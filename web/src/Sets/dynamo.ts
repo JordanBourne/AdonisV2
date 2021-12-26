@@ -10,7 +10,7 @@ import * as RootStore from '../store';
 
 import { SetIsFetchedActionFn } from './action-symbols';
 
-import { ProgramDb, MovementDto } from '../Programs/types';
+import { ProgramDb } from '../Programs/types';
 import { ProgramRegistrationDb } from '../ProgramRegistrations/types';
 import { chunk } from 'lodash';
 const { v4: uuidv4 } = require('uuid');
@@ -20,7 +20,6 @@ export const batchAndSaveSetsToDb = async(sets: SetDb[]) => {
 };
 
 export interface CreateSetFromProgramObjectProps {
-    movementDto: MovementDto;
     program: ProgramDb;
     programRegistration: ProgramRegistrationDb;
     day: number;
@@ -43,7 +42,7 @@ export const createChunkOfSets = async (sets: SetDb[]): Promise<void> => {
             })
         }
     });
-    await sendDynamoCommand( batchWriteItemCommand, null );
+    const output = await sendDynamoCommand( batchWriteItemCommand, null );
     for (const setDb of sets) {
         RootStore.store.dispatch(
             SetIsFetchedActionFn(setDb)
@@ -61,6 +60,7 @@ export interface FetchSetsForDayProps {
     programRegistrationId: string;
 };
 export const fetchSetsForDay = async (props: FetchSetsForDayProps, LastEvaluatedKey?: any ): Promise<void> => {    
+    console.group('fetchSetsForDay');
     const queryCommand = new QueryCommand({
         KeyConditionExpression: 'cognitoIdentityId = :cognitoIdentityId and programRegistrationIdWeekDay = :programRegistrationIdWeekDay',
         ExpressionAttributeValues: {
@@ -89,6 +89,7 @@ export const fetchSetsForDay = async (props: FetchSetsForDayProps, LastEvaluated
     if (queryResults.LastEvaluatedKey) {
         await fetchSetsForDay(props, queryResults.LastEvaluatedKey);
     }
+    console.groupEnd();
 };
 
 export const fetchSet = async (setId: string): Promise<void> => {

@@ -12,6 +12,7 @@ interface CreateProfilesTableProps {
     MovementsTable: dynamodb.Table;
     ProgramsTable: dynamodb.Table;
     ProgramRegistrationsTable: dynamodb.Table;
+    OrmTable: dynamodb.Table;
 };
 
 export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfilesTableProps) => {
@@ -74,6 +75,7 @@ export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfile
     props.ProgramRegistrationsTable.grantReadWriteData(authenticatedRowLevelAccess);
     props.ProgramsTable.grantReadWriteData(authenticatedRowLevelAccess);
     props.MovementsTable.grantReadWriteData(authenticatedRowLevelAccess);
+    props.OrmTable.grantReadWriteData(authenticatedRowLevelAccess);
 
     props.MovementsTable.grantReadData(authenticatedRole);
     props.ProgramsTable.grantReadData(authenticatedRole);

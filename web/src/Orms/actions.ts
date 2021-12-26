@@ -1,12 +1,75 @@
+import { PutItemCommand, BatchWriteItemCommand, PutRequest, QueryCommand, BatchGetItemCommand } from '@aws-sdk/client-dynamodb';
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 import { store } from '../store';
 import { OrmIsFetchedActionFn } from './action-symbols';
-import { ormMocks } from './mocks';
-export const populateMockOrms = async () => {
-    for(const orm of ormMocks) {
+import { OrmDb } from './types';
+import * as uuid from 'uuid';
+import { DynamoDBTableName, DynamoDBLabelIndexName } from './config';
+import { sendDynamoCommand } from '../util/dynamo';
+import { MovementConfiguration } from '../Programs/types';
+import { chunk, pick } from 'lodash';
+
+export const batchAndSaveOneRepMaxesToDb = async (orms: OrmDb[]) => {
+    await Promise.all(chunk(orms, 25).map(createChunkOfOneRepMaxes));
+};
+
+export const createChunkOfOneRepMaxes = async (orms: OrmDb[]): Promise<void> => {
+    const batchWriteItemCommand = new BatchWriteItemCommand({
+        RequestItems: {
+            [DynamoDBTableName]: orms.map(orm => {
+                const putRequest : PutRequest = {
+                    Item: marshall(orm)
+                };
+                return {
+                    PutRequest: putRequest
+                };
+            })
+        }
+    });
+    const output = await sendDynamoCommand( batchWriteItemCommand, null );
+    for (const ormDb of orms) {
         store.dispatch(
-            OrmIsFetchedActionFn(
-                orm
-            )
+            OrmIsFetchedActionFn(ormDb)
         );
     }
+};
+
+const addCognitoIdentityIdToQuery = (command: QueryCommand, cognitoIdentityId: string) => {
+    ((command.input.ExpressionAttributeValues || {})[':cognitoIdentityId'] || {})['S'] = cognitoIdentityId;
+};
+
+export const fetchLatestOrms = async (LastEvaluatedKey?: any ): Promise<void> => {    
+    console.group('fetchLatestOrms');
+    const queryCommand = new QueryCommand({
+        KeyConditionExpression: 'cognitoIdentityId = :cognitoIdentityId and #label = :label',
+        ExpressionAttributeValues: {
+            ':cognitoIdentityId': { 'S': 'COGNITO_IDENTITY_ID' },
+            ':label': { 'S': 'latest' }
+        },
+        ExpressionAttributeNames: {
+            '#label': 'label'
+        },
+        IndexName: DynamoDBLabelIndexName,
+        TableName: DynamoDBTableName,
+        ExclusiveStartKey: LastEvaluatedKey,
+        Limit: 15,
+    });
+    const queryResults = await sendDynamoCommand( queryCommand, addCognitoIdentityIdToQuery );
+    const batchGetItemCommand = new BatchGetItemCommand({
+        RequestItems: {
+            [DynamoDBTableName]: {
+                Keys: queryResults.Items.map((item : OrmDb) => pick(item, ['cognitoIdentityId', 'ormId']))
+            }
+        }
+    });
+    const batchGetItemCommandResults = await sendDynamoCommand( batchGetItemCommand, null );
+    for (const item of batchGetItemCommandResults.Responses[DynamoDBTableName]) {
+        store.dispatch(
+            OrmIsFetchedActionFn(unmarshall(item) as OrmDb)
+        );
+    }
+    if (queryResults.LastEvaluatedKey) {
+        await fetchLatestOrms(queryResults.LastEvaluatedKey);
+    }
+    console.groupEnd();
 };
