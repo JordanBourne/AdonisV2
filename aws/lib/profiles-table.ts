@@ -9,7 +9,7 @@ interface CreateProfilesTableProps {
 export const createProfilesTable = (scope: cdk.Construct, props: CreateProfilesTableProps) => {
     const ProfilesTable = new dynamodb.Table(scope, `${props.prefix}ProfilesTable`, {
         partitionKey: {
-            name: 'username',
+            name: 'cognitoIdentityId',
             type: dynamodb.AttributeType.STRING
         },
         billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,

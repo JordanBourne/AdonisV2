@@ -5,14 +5,13 @@ import { LockOutlined } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import * as styles from './styles';
 import { signUp } from './actions';
-import { useHistory } from 'react-router-dom';
-import { checkAndFetchMyProfile } from '../../Profile/actions';
+import { useNavigate } from 'react-router-dom';
 const LockOutlinedIcon = LockOutlined;
 
 const theme = createTheme();
 
 export const SignUp = () => {
-    const history = useHistory();
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const [isSuccess, setIsSuccess] = useState(false);
     const [usernameErrorText, setUsernameErrorText] = useState('');
@@ -70,7 +69,7 @@ export const SignUp = () => {
             password: password as string,
             dispatch
         }).then(() => {
-            history.push('/enter-confirmation-code');
+            navigate('/enter-confirmation-code');
         });
         return false;
     };

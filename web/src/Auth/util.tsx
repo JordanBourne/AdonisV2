@@ -6,6 +6,19 @@ import { CognitoIdentityClient, GetIdCommand } from "@aws-sdk/client-cognito-ide
 
 import * as AmazonCognitoIdentity from 'amazon-cognito-identity-js';
 
+export const getCredentialsAndId = async () => {
+  const cognitoUserSession = await getCognitoUserSession();
+  if (cognitoUserSession === null) {
+    return null;
+  }
+  const cognitoIdentityId = await getCognitoIdentityId(cognitoUserSession);
+  const cognitoIdentityCredentials = await getCognitoIdentityCredentials();
+  if (cognitoIdentityCredentials === null) {
+    return null;
+  }
+  return { cognitoIdentityId, cognitoIdentityCredentials };
+};
+
 export const getCognitoUserSession = async (): Promise<AmazonCognitoIdentity.CognitoUserSession | null> => {
   const userPool = new AmazonCognitoIdentity.CognitoUserPool({
     UserPoolId,

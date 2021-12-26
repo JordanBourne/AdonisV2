@@ -8,6 +8,10 @@ import * as dynamodb from '@aws-cdk/aws-dynamodb';
 interface CreateProfilesTableProps {
     prefix: string;
     ProfilesTable: dynamodb.Table;
+    SetsTable: dynamodb.Table;
+    MovementsTable: dynamodb.Table;
+    ProgramsTable: dynamodb.Table;
+    ProgramRegistrationsTable: dynamodb.Table;
 };
 
 export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfilesTableProps) => {
@@ -17,6 +21,7 @@ export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfile
         accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
         autoVerify: { email: true }
     });
+
     const userPoolClient = new cognito.UserPoolClient(scope, `${props.prefix}CognitoUserPoolClient`, {
         userPool: pool,
         authFlows: {
@@ -45,6 +50,7 @@ export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfile
             "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "authenticated" },
         }, "sts:AssumeRoleWithWebIdentity"),
     });
+
     authenticatedRole.addToPolicy(new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: [
@@ -55,22 +61,22 @@ export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfile
         resources: ["*"],
     }));
 
-    authenticatedRole.addToPolicy(new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
-        actions: [
-            'dynamodb:DeleteItem',
-            'dynamodb:GetItem',
-            'dynamodb:PutItem',
-            'dynamodb:Query',
-            'dynamodb:UpdateItem'
-        ],
-        resources: [ props.ProfilesTable.tableArn ],
-        conditions: {
+    const authenticatedRowLevelAccess = new iam.PrincipalWithConditions(authenticatedRole, {
+        conditionsKey: {
             'ForAllValues:StringEquals': {
                 'dynamodb:LeadingKeys': ['${cognito-identity.amazonaws.com:sub}']
             }
-        }
-    }));
+        },
+    });
+
+    props.ProfilesTable.grantReadWriteData(authenticatedRowLevelAccess);
+    props.SetsTable.grantReadWriteData(authenticatedRowLevelAccess);
+    props.ProgramRegistrationsTable.grantReadWriteData(authenticatedRowLevelAccess);
+    props.ProgramsTable.grantReadWriteData(authenticatedRowLevelAccess);
+    props.MovementsTable.grantReadWriteData(authenticatedRowLevelAccess);
+
+    props.MovementsTable.grantReadData(authenticatedRole);
+    props.ProgramsTable.grantReadData(authenticatedRole);
 
     const defaultPolicy = new cognito.CfnIdentityPoolRoleAttachment(scope, `${props.prefix}CognitoDefaultPolicy`, {
         identityPoolId: identityPool.ref,

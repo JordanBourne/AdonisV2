@@ -1,7 +1,7 @@
 import { Grid, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { titleCaseString } from '../util/textUtil';
-import { getCurrentWorkout, getLastWorkout, workout } from '../util/workoutUtil';
+// import { getCurrentWorkout, getLastWorkout, workout } from '../util/workoutUtil';
 import { selectMyProfile } from '../Profile/selectors';
 
 const styles = {
@@ -55,35 +55,35 @@ export const Home = () => {
       You need to log in before viewing this page
     </span>);
   }
-  const todaysWorkout: workout[] = getCurrentWorkout(myProfile);
-  const yesterdaysWorkout: workout[] = getLastWorkout(myProfile);
+  // const todaysWorkout: workout[] = getCurrentWorkout(myProfile);
+  // const yesterdaysWorkout: workout[] = getLastWorkout(myProfile);
 
   return (
     <Grid container sx={styles.backgroundStyle}>
       <Grid item sx={{...styles.boxStyle, ...styles.boxLeft}} xs={12} sm={6}>
         <Grid sx={styles.dashboardContent}>
           <Typography variant="h2" sx={styles.dashboardBoxTitle}>Last Workout</Typography>
-          {yesterdaysWorkout && yesterdaysWorkout.map((workout: workout) => (
+          {/* {yesterdaysWorkout && yesterdaysWorkout.map((workout: workout) => (
             <Grid item container sx={styles.workoutPreviewContainer} key={workout.name}>
               <Typography sx={styles.workoutTitle}>{titleCaseString(workout.name)}</Typography>
               <Typography sx={styles.workoutWeight}>{workout.weight + ' lbs'}</Typography>
               {workout.sets.join(', ')}
             </Grid>
             )
-          )}
+          )} */}
         </Grid>
       </Grid>
       <Grid item sx={{...styles.boxStyle, ...styles.boxRight}} xs={12} sm={6}>
         <Grid sx={styles.dashboardContent}>
           <Typography variant="h2" sx={styles.dashboardBoxTitle}>Next Workout</Typography>
-          {todaysWorkout && todaysWorkout.map((workout: workout) => (
+          {/* {todaysWorkout && todaysWorkout.map((workout: workout) => (
             <Grid item container sx={styles.workoutPreviewContainer} key={workout.name}>
               <Typography sx={styles.workoutTitle}>{titleCaseString(workout.name)}</Typography>
               <Typography sx={styles.workoutWeight}>{workout.weight + ' lbs'}</Typography>
               {workout.sets.join(', ')}
             </Grid>
             )
-          )}
+          )} */}
         </Grid>
       </Grid>
       {/* <Grid sx={styles.boxStyle} xs={12} sm={6}>

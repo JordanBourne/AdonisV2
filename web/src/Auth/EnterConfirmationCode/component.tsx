@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Avatar, Button, CssBaseline, TextField, Link, Grid, Box, Typography, Container, Alert } from '@mui/material';
 import { LockOutlined } from '@mui/icons-material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { confirmRegistration } from './actions';
 import * as styles from './styles';
 import { selectMyUsername } from '../selectors';
-import { createMockProfile } from '../Mocks/create-mock-profile';
-import { checkAndFetchMyProfile } from '../../Profile/actions';
 const LockOutlinedIcon = LockOutlined;
 
 const theme = createTheme();
 
 export const EnterConfirmationCode = () => {
-    const history = useHistory();
+    const navigate = useNavigate();
     const [isSuccess, setIsSuccess] = useState(false);
     const [confirmationCodeErrorText, setConfirmationCodeErrorText] = useState('');
     const username = useSelector(selectMyUsername);
@@ -46,11 +44,7 @@ export const EnterConfirmationCode = () => {
         }).then(() => {
             setIsSuccess(true);
         }).then(() => {
-            return createMockProfile();
-        }).then(() => {
-            return checkAndFetchMyProfile();
-        }).then(() => {
-            history.push('/signin');
+            navigate('/signin');
         });
         return false;
     };

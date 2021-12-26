@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import { Avatar, Button, CssBaseline, TextField, FormControlLabel, Checkbox, Link, Grid, Box, Typography, Container } from '@mui/material';
 import { LockOutlined } from '@mui/icons-material';
 import { signIn } from './actions';
-import { useHistory } from 'react-router-dom';
-import { checkAndFetchMyProfile } from '../../Profile/actions';
-import { createMockProfile } from '../Mocks/create-mock-profile';
+import { useNavigate } from 'react-router-dom';
+import { fetchMyProfile, createProfile } from '../../Profile/actions';
 const LockOutlinedIcon = LockOutlined;
 
 export const SignIn = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [usernameErrorText, setUsernameErrorText] = useState('');
   const [passwordErrorText, setPasswordErrorText] = useState('');
   const validateUsername = (event: React.FormEvent<HTMLFormElement>) => {
@@ -49,10 +48,17 @@ export const SignIn = () => {
       username: username as string,
       password: password as string
     }).then(() => {
-      return createMockProfile();
+      return fetchMyProfile()
+       .catch((error : any) => {
+        if (error?.code === 'PROFILE_NOT_FOUND') {
+          return createProfile();
+        }
+        throw(error);
+       })
     }).then(() => {
-      checkAndFetchMyProfile();
-      history.push('/home');
+      return fetchMyProfile();
+    }).then(() => {
+      navigate('/home');
     });
     return false;
   };

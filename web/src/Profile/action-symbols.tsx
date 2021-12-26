@@ -1,7 +1,7 @@
-import type { profile } from './types';
+import type { ProfileDb } from './types';
 
 export const SetMyProfile = 'profile/set-my-profile';
-export const SetMyProfileAction = (myProfile : profile|null) => {
+export const SetMyProfileAction = (myProfile : ProfileDb|null) => {
     return {
         myProfile,
         type: SetMyProfile

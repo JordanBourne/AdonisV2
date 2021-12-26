@@ -1,93 +1,101 @@
 import { store } from '../store';
-import { selectMyUsername } from '../Auth/selectors';
 import { SetMyProfileAction } from './action-symbols';
-import { profile, completedWorkout, } from './types';
-import { trainingMax, lift } from '../workout';
-import { getCognitoIdentityCredentials, getCognitoUserSession, getCognitoIdentityId } from '../Auth/util';
+import { ProfileDb, completedWorkout, } from './types';
+import { trainingMax, lift } from '../Programs/types';
+import { sendDynamoCommand } from '../util/dynamo';
 
-import { GetItemCommand, PutItemCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { GetItemCommand, PutItemCommand, DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { DynamoDBTableName } from './config';
+import { ProgramRegistrationDb } from '../ProgramRegistrations/types';
 
-export const checkAndFetchMyProfile = async () => {
-  const myUsername = selectMyUsername(store.getState());
-  if (myUsername) {
-    const myProfile: profile = await fetchProfile(myUsername) as profile;
-    store.dispatch(SetMyProfileAction(myProfile));
-  }
-};
-
-export const fetchProfile = async (username: string): Promise<profile | null> => {
-  try {
-    console.groupCollapsed('fetchProfile');
-    const cognitoUserSession = await getCognitoUserSession();
-    if (cognitoUserSession === null) {
-      return null;
-    }
-    const cognitoIdentityId = await getCognitoIdentityId(cognitoUserSession);
-    console.log(cognitoIdentityId);
-    const cognitoIdentityCredentials = await getCognitoIdentityCredentials();
-    if (cognitoIdentityCredentials === null) {
-      throw (new Error('Attempting to access dynamo, but not authenticated. fetchProfile should not have been called yet.'));
-    }
-    const dynamoDbClient = new DynamoDBClient({
-      region: 'us-west-2',
-      credentials: cognitoIdentityCredentials
-    });
-    const command = new GetItemCommand({
-      Key: {
-        username: {
-          'S': `${cognitoIdentityId}`
+export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
+    try {
+        console.group('FetchProfile');
+        const command = new GetItemCommand({
+            ConsistentRead: true,
+            Key: {
+                cognitoIdentityId: {
+                    'S': 'COGNITO_IDENTITY_ID'
+                }
+            },
+            TableName: DynamoDBTableName
+        });
+        const response = await sendDynamoCommand(command);
+        console.log(command.input.Key);
+        console.log(response);
+        const responseItem = response?.Item ? unmarshall(response.Item) as ProfileDb : null;
+        if (responseItem === null) {
+            console.log('Profile not found');
+            console.groupEnd();
+            throw({
+                code: 'PROFILE_NOT_FOUND'
+            });
         }
-      },
-      TableName: DynamoDBTableName
-    });
-    const response = await dynamoDbClient.send(command);
-    const responseItem = unmarshall(response?.Item ?? {}) as profile | null;
-    console.log('Response Item');
-    console.log(responseItem);
-    return responseItem;
-  } catch(e) {
-    throw(e);
-  } finally {
-    console.groupEnd();
-  }
+        console.log('Profile has been found');
+        console.log(responseItem);
+        store.dispatch(SetMyProfileAction(responseItem));
+        console.groupEnd();
+        return responseItem;
+    } catch (e) {
+        throw (e);
+    }
 };
 
-export const setMyProfile = async (myProfile: profile): Promise<void> => {
-  const cognitoUserSession = await getCognitoUserSession();
-  if (cognitoUserSession === null) {
-    return;
-  }
-  const cognitoIdentityId = await getCognitoIdentityId(cognitoUserSession);
-  const cognitoIdentityCredentials = await getCognitoIdentityCredentials();
-  if (cognitoIdentityCredentials === null) {
-    throw (new Error('Attempting to access dynamo, but not authenticated. fetchProfile should not have been called yet.'));
-  }
-  const dynamoDbClient = new DynamoDBClient({
-    region: 'us-west-2',
-    credentials: cognitoIdentityCredentials
-  });
-  const command = new PutItemCommand({
-    Item: marshall({
-      ...myProfile,
-      username: `${cognitoIdentityId}`
-    }),
-    TableName: DynamoDBTableName
-  });
-  await dynamoDbClient.send(command);
+export const createProfile = async () => {
+    await setMyProfile({
+        programRegistrationId: null,
+        programId: null,
+        week: null,
+        day: null,
+        roundingSettings: {
+            rounding: 5,
+            microPlates: false
+        }
+    });
+};
+
+export const setMyProfile = async (myProfile: ProfileDb): Promise<void> => {
+    const command = new PutItemCommand({
+        Item: marshall({
+            ...myProfile,
+            cognitoIdentityId: 'COGNITO_IDENTITY_ID'
+        }),
+        TableName: DynamoDBTableName
+    });
+    await sendDynamoCommand(command);
+};
+
+export const registerProfileToProgramRegistrationObject = async (programRegistration: ProgramRegistrationDb): Promise<void> => {
+    const command = new UpdateItemCommand({
+        Key: {
+            'cognitoIdentityId': { 'S': 'COGNITO_IDENTITY_ID' }
+        },
+        UpdateExpression: 'SET week=:week, #day=:day, programRegistrationId=:programRegistrationId, programId=:programId',
+        ExpressionAttributeValues: {
+            ':week': { 'N': '1' },
+            ':day': { 'N': '1' },
+            ':programRegistrationId': { 'S': programRegistration.programRegistrationId },
+            ':programId': { 'S': programRegistration.programId }
+        },
+        ExpressionAttributeNames: {
+            '#day': 'day',
+        },
+        TableName: DynamoDBTableName
+    });
+    await sendDynamoCommand(command);
 };
 
 export const completeWorkout = (
-  completedWorkout: completedWorkout,
-  newTrainingMaxes: { [key: string]: trainingMax }[],
-  updatedLifts: { [key: string]: lift }[]
+    completedWorkout: completedWorkout,
+    newTrainingMaxes: { [key: string]: trainingMax }[],
+    updatedLifts: { [key: string]: lift }[]
 ) => {
-  return {
-    payload: {
-      completedWorkout,
-      newTrainingMaxes,
-      updatedLifts
+    return {
+        payload: {
+            completedWorkout,
+            newTrainingMaxes,
+            updatedLifts
+        }
     }
-  }
 };

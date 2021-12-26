@@ -2,14 +2,15 @@ import React, { useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Route,
-  Switch,
+  Routes,
 } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { NavBar } from './NavBar/NavBar';
 import { Home } from './Home/Home';
 import { Calendar } from './Calendar/Calendar';
-import { Programs } from './Programs/Programs';
-import { Workout } from './Workout/Workout';
+import { Programs } from './Programs/component';
+import { Workout } from './Workouts/Workout';
+import { fetchSetsForDay } from './Sets/dynamo';
 import './app.css';
 import { store } from './store'
 import { Provider } from 'react-redux'
@@ -19,43 +20,42 @@ import { EnterConfirmationCode } from './Auth/EnterConfirmationCode/component';
 import { checkExistingUserSession } from './Auth/actions';
 import { SetMyProfileAction } from './Profile/action-symbols';
 import { selectMyProfile } from './Profile/selectors';
-import { checkAndFetchMyProfile } from './Profile/actions';
+import { fetchMyProfile } from './Profile/actions';
+import { fetchProgramRegistration } from './ProgramRegistrations/actions';
+import { loadMockSbsRtf } from './Programs/actions';
+import { populateMockOrms } from './Orms/actions';
+import { ProfileDb } from './Profile/types';
 
 // login();
 
 function App() {
+  const profile = useSelector(selectMyProfile);
   useEffect(() => {
     checkExistingUserSession()
-      .then(checkAndFetchMyProfile);
+      .then(loadMockSbsRtf)
+      .then(fetchMyProfile)
+      .then((myProfile: ProfileDb|null) => {
+        if (myProfile?.programRegistrationId) {
+          return fetchProgramRegistration(myProfile.programRegistrationId);
+        }
+      })
+      .then(populateMockOrms)
   }, []);
   return (
     <div>
       <Provider store={store}>
         <Router >
           <NavBar />
-          <Switch>
-            <Route path="/signup">
-              <SignUp />
-            </Route>
-            <Route path="/enter-confirmation-code">
-              <EnterConfirmationCode />
-            </Route>
-            <Route path="/signin">
-              <SignIn />
-            </Route>
-            <Route path="/calendar">
-              <Calendar />
-            </Route>
-            <Route path="/programs">
-              <Programs />
-            </Route>
-            <Route path="/workout">
-              <Workout />
-            </Route>
-            <Route path="/">
-              <Home />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/enter-confirmation-code" element={<EnterConfirmationCode />} />
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/programs" element={<Programs />} />
+            <Route path="/workout" element={<Workout />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
+          </Routes>
         </Router>
       </Provider>
     </div>
