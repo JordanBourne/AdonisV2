@@ -35,6 +35,7 @@ export const Workout = () => {
     const movements: string[] = uniq(sets.map(s => s.movement));
     const program = useSelector(selectProgram(profile?.programId));
     const ormsByMovement = useSelector(selectAllOrmsByMovement);
+    console.log(ormsByMovement);
     const programRegistration = useSelector(selectProgramRegistration(programRegistrationId as string));
     const ormsBySetId: { [key: string]: OrmDb } = {};
     for (const set of sets) {
@@ -55,7 +56,8 @@ export const Workout = () => {
         || !day
         || !program
         || !programRegistration
-        || !programRegistrationId) {
+        || !programRegistrationId
+        || !Object.keys(ormsByMovement).length) {
         return (<NeedToRegisterForProgram />);
     }
 
@@ -96,7 +98,7 @@ export const Workout = () => {
                                 label="Day"
                                 onChange={(event) => goto(week, event.target.value)}
                             >
-                                {Object.keys(program.daysPerWeek[programRegistration.daysPerWeek])
+                                {programRegistration.days
                                     .map((val: string) => {
                                         return (<MenuItem key={val} value={val}>{val}</MenuItem>);
                                     })}
@@ -108,7 +110,8 @@ export const Workout = () => {
                     return (<Grid item container sx={styles.movementsContainer} key={movement}>
                         <Grid item>
                             <Typography sx={styles.movementName}>{titleCaseString(movement)}</Typography>
-                            <Typography sx={styles.movementWeight}>{Math.round(ormsByMovement[movement].calcOrm * setsByMovement[movement][0].percentOrm / 100) + ' lbs'}</Typography>
+                            <Typography sx={styles.movementWeight}>{Math.round(ormsByMovement[movement]?.calcOrm * setsByMovement[movement][1]?.percentOrm) + ' lbs'}</Typography>
+                            <Typography sx={styles.movementWeight}>(.95 {Math.round(ormsByMovement[movement]?.calcOrm * setsByMovement[movement][0]?.percentOrm) + ' lbs'})</Typography>
                         </Grid>
                         <Grid item sx={styles.setContainer}>
                             {setsByMovement[movement].map((set: SetDb) => (<SetButton setId={set.setId} />))}

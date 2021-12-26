@@ -84,6 +84,7 @@ export const registerProfileToProgramRegistrationObject = async (programRegistra
         TableName: DynamoDBTableName
     });
     await sendDynamoCommand(command);
+    await fetchMyProfile();
 };
 
 export const completeWorkout = (

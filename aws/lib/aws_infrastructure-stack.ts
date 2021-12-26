@@ -7,6 +7,7 @@ import { Configuration } from '../bin/environment-configurations';
 import { createMovementsTable } from './movements-table';
 import { createProgramsTable } from './programs-table';
 import { createProgramRegistrationsTable } from './program-registrations-table';
+import { createOrmTable } from './orm-table';
 
 export class AwsInfrastructureStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: Configuration) {
@@ -17,13 +18,15 @@ export class AwsInfrastructureStack extends cdk.Stack {
     const { MovementsTable } = createMovementsTable(this, props);
     const { ProgramsTable } = createProgramsTable(this, props);
     const { ProgramRegistrationsTable } = createProgramRegistrationsTable(this, props);
+    const { OrmTable } = createOrmTable(this, props);
     createCognitoUserPool(this, {
       ...props,
       ProfilesTable,
       SetsTable,
       MovementsTable,
       ProgramsTable,
-      ProgramRegistrationsTable
+      ProgramRegistrationsTable,
+      OrmTable,
     });
   }
 }

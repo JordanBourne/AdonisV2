@@ -21,9 +21,9 @@ import { checkExistingUserSession } from './Auth/actions';
 import { SetMyProfileAction } from './Profile/action-symbols';
 import { selectMyProfile } from './Profile/selectors';
 import { fetchMyProfile } from './Profile/actions';
+import { fetchLatestOrms } from './Orms/actions';
 import { fetchProgramRegistration } from './ProgramRegistrations/actions';
 import { loadMockSbsRtf } from './Programs/actions';
-import { populateMockOrms } from './Orms/actions';
 import { ProfileDb } from './Profile/types';
 
 // login();
@@ -39,7 +39,9 @@ function App() {
           return fetchProgramRegistration(myProfile.programRegistrationId);
         }
       })
-      .then(populateMockOrms)
+      .then(() => console.log('before'))
+      .then(fetchLatestOrms)
+      .then(() => console.log('after'));
   }, []);
   return (
     <div>

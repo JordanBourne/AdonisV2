@@ -5,22 +5,23 @@ import { sendDynamoCommand } from "../util/dynamo";
 import { ProgramIsFetchedActionFn } from './action-symbols';
 
 import { ProgramRegistrationDb } from './types';
-import { ProgramDb } from '../Programs/types';
+import { ProgramConfiguration, ProgramDb } from '../Programs/types';
 import { store } from '../store';
 
 const { v4: uuidv4 } = require('uuid');
 
-export const createProgramRegistrationObject = async (program: ProgramDb, daysPerWeek: number) => {
+export const createProgramRegistrationObject = async (program: ProgramDb, programConfiguration: ProgramConfiguration) => {
     const programRegistration: ProgramRegistrationDb = {
         cognitoIdentityId: 'COGNITO_IDENTITY_ID',
         programRegistrationId: uuidv4(),
         programId: program.programId,
-        daysPerWeek
+        days: Object.keys(programConfiguration.days)
     };
     await sendDynamoCommand(new PutItemCommand({
         Item: marshall(programRegistration),
         TableName: DynamoDBTableName
     }));
+    store.dispatch(ProgramIsFetchedActionFn(programRegistration));
     return programRegistration;
 };
 

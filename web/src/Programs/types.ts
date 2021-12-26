@@ -2,9 +2,6 @@ export interface ProgramDto {
     name: string;
     title: string;
     descriptions: string[];
-    daysPerWeek: {
-        [key: number]: weekMovements;
-    };
     setScheme: setScheme;
 }
 
@@ -29,15 +26,20 @@ export interface weekMovements {
     [key: number]: string[];
 }
 
+export interface setInMovement {
+    percent: number,
+    repsExpected: number
+};
+
 export interface movement {
-    percent: number;
-    sets: number[];
+    sets: setInMovement[];
 }
 
 
 export interface weightScheme {
     primary: movement;
     auxiliary: movement;
+    accessory: movement;
 }
 
 export interface setScheme {
@@ -46,8 +48,18 @@ export interface setScheme {
     };
 }
 
-export interface MovementDto {
-    movement: string;
-    startingOneRepMax: number;
-    assignment: 'p1' | 'p2' | 'p1a1' | 'etc' | string;
+export interface MovementConfiguration {
+    name: string;
+    assignment: 'primary'|'auxiliary'|'accessory';
+    oneRepMax: number;
+}
+
+interface DayOfMovementConfiguration {
+    [key: number]: {
+        movements: MovementConfiguration[]
+    }
+};
+
+export interface ProgramConfiguration {
+    days: DayOfMovementConfiguration
 };
