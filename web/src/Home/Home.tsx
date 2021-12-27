@@ -1,92 +1,91 @@
+import React, { useEffect, useState } from 'react';
 import { Grid, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { titleCaseString } from '../util/textUtil';
 // import { getCurrentWorkout, getLastWorkout, workout } from '../util/workoutUtil';
 import { selectMyProfile } from '../Profile/selectors';
+import { fetchSetsForDay } from '../Sets/dynamo';
+import { selectSetsForDay } from '../Sets/selectors';
+import { SetDb } from '../Sets/types';
+import { OrmDb } from '../Orms/types';
+import { ProfileDb } from '../Profile/types';
+import { selectAllOrmsByMovement } from '../Orms/selectors';
+import { orderBy, uniq, groupBy, map } from 'lodash';
+import { selectProgram } from '../Programs/selectors';
+import { selectProgramRegistration } from '../ProgramRegistrations/selectors';
+import { styles } from './styles';
 
-const styles = {
-  backgroundStyle: {
-    height: '100%',
-    width: '100%'
-  },
-  boxStyle: {
-    backgroundColor: '#EBEBEB',
-    padding: '40px'
-  },
-  boxLeft: {
-    paddingRight: '20px',
-  },
-  boxRight: {
-    paddingLeft: '20px',
-  },
-  dashboardContent: {
-    backgroundColor: '#FFF',
-    border: '1px solid #BBB',
-    height: '100%',
-    paddingBottom: '20px'
-  },
-  dashboardBoxTitle: {
-    borderBottom: '1px solid #4F4F4F',
-    margin: '10px',
-    fontSize: '1.5em',
-    color: '#4F4F4F',
-  },
-  workoutPreviewContainer: {
-    padding: '10px'
-  },
-  workoutTitle: {
-    fontSize: '1.125em',
-    padding: '0px',
-    width: '100%',
-    marginBottom: '-2px'
-  },
-  workoutWeight: {
-    fontSize: '1em',
-    padding: '0px',
-    width: '100%'
+const WorkoutSummary = ({ sets, profile, title }: { sets: SetDb[], profile: ProfileDb, title: string }) => {
+  const setsByMovement: { [key: string]: SetDb[] } = groupBy(sets, 'movement') as { [key: string]: SetDb[] };
+  const ormsByMovement = useSelector(selectAllOrmsByMovement);
+  const ormsBySetId: { [key: string]: OrmDb } = {};
+  for (const set of sets) {
+    ormsBySetId[set.setId] = ormsByMovement[set.movement];
   }
-}
+  return (
+    <Grid item sx={{ ...styles.boxStyle, ...styles.boxRight }} xs={12} sm={6}>
+      <Grid sx={styles.dashboardContent}>
+        <Typography variant="h2" sx={styles.dashboardBoxTitle}>{title}</Typography>
+        {map(setsByMovement, (setsForMovement, movement) => {
+          return (
+            <Grid item container sx={styles.workoutPreviewContainer} key={movement}>
+              <Typography sx={styles.workoutTitle}>{titleCaseString(movement)}</Typography>
+              {map(groupBy(setsForMovement, 'percentOrm'), (setsForOrm, percentOrm : string) => {
+                return map(groupBy(setsForOrm, 'repsExpected'), (similarSets, repsExpected : string) => {
+                  return (
+                    <Typography sx={styles.workoutWeight}>
+                      {similarSets.length} x {repsExpected} x {Number(percentOrm) * ormsByMovement[movement]?.calcOrm}
+                    </Typography>
+                  );
+                })
+              })}
+            </Grid>
+          );
+        })}
+      </Grid>
+    </Grid>
+  );
+};
 
 export const Home = () => {
-  const myProfile = useSelector(selectMyProfile);
-  console.log(myProfile);
-  if (!myProfile) {
+  const [loading, setLoading] = useState(false);
+  const profile = useSelector(selectMyProfile);
+  const programRegistrationId: string | null = profile?.programRegistrationId ?? null;
+  const week: number = profile?.week ?? 1;
+  const day: number = profile?.day ?? 1;
+  const setsToday = orderBy(useSelector(selectSetsForDay({ week, day, programRegistrationId })), ['week', 'day', 'index']);
+  const program = useSelector(selectProgram(profile?.programId));
+  const programRegistration = useSelector(selectProgramRegistration(programRegistrationId as string));
+  let previousWeek, previousDay;
+
+  useEffect(() => {
+    if (programRegistrationId && week && day) {
+      setLoading(true);
+      fetchSetsForDay({
+        programRegistrationId: programRegistrationId as string,
+        week: week as number,
+        day: day as number,
+      }).then(() => setLoading(false));
+    }
+  }, [day, week, programRegistrationId]);
+
+  if (loading) return (<span>loading</span>);
+
+  if (!profile) {
     return (<span>
       You need to log in before viewing this page
     </span>);
   }
-  // const todaysWorkout: workout[] = getCurrentWorkout(myProfile);
-  // const yesterdaysWorkout: workout[] = getLastWorkout(myProfile);
 
   return (
     <Grid container sx={styles.backgroundStyle}>
-      <Grid item sx={{...styles.boxStyle, ...styles.boxLeft}} xs={12} sm={6}>
+      <WorkoutSummary sets={setsToday} profile={profile} title='Next Workout' />
+      <Grid item sx={{ ...styles.boxStyle, ...styles.boxLeft }} xs={12} sm={6}>
         <Grid sx={styles.dashboardContent}>
           <Typography variant="h2" sx={styles.dashboardBoxTitle}>Last Workout</Typography>
-          {/* {yesterdaysWorkout && yesterdaysWorkout.map((workout: workout) => (
-            <Grid item container sx={styles.workoutPreviewContainer} key={workout.name}>
-              <Typography sx={styles.workoutTitle}>{titleCaseString(workout.name)}</Typography>
-              <Typography sx={styles.workoutWeight}>{workout.weight + ' lbs'}</Typography>
-              {workout.sets.join(', ')}
-            </Grid>
-            )
-          )} */}
         </Grid>
       </Grid>
-      <Grid item sx={{...styles.boxStyle, ...styles.boxRight}} xs={12} sm={6}>
-        <Grid sx={styles.dashboardContent}>
-          <Typography variant="h2" sx={styles.dashboardBoxTitle}>Next Workout</Typography>
-          {/* {todaysWorkout && todaysWorkout.map((workout: workout) => (
-            <Grid item container sx={styles.workoutPreviewContainer} key={workout.name}>
-              <Typography sx={styles.workoutTitle}>{titleCaseString(workout.name)}</Typography>
-              <Typography sx={styles.workoutWeight}>{workout.weight + ' lbs'}</Typography>
-              {workout.sets.join(', ')}
-            </Grid>
-            )
-          )} */}
-        </Grid>
-      </Grid>
-      {/* <Grid sx={styles.boxStyle} xs={12} sm={6}>
+      <Grid sx={styles.boxStyle} xs={12} sm={6}>
         Starting Maxes
       </Grid>
       <Grid sx={styles.boxStyle} xs={12} sm={6}>
@@ -97,7 +96,7 @@ export const Home = () => {
       </Grid>
       <Grid sx={styles.boxStyle} xs={12} sm={6}>
         Rate of Gains
-      </Grid> */}
+      </Grid>
     </Grid>
   );
 };

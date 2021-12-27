@@ -35,7 +35,6 @@ export const Workout = () => {
     const movements: string[] = uniq(sets.map(s => s.movement));
     const program = useSelector(selectProgram(profile?.programId));
     const ormsByMovement = useSelector(selectAllOrmsByMovement);
-    console.log(ormsByMovement);
     const programRegistration = useSelector(selectProgramRegistration(programRegistrationId as string));
     const ormsBySetId: { [key: string]: OrmDb } = {};
     for (const set of sets) {
