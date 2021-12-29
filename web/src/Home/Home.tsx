@@ -92,11 +92,6 @@ export const Home = () => {
         <Grid container sx={styles.backgroundStyle}>
             <WorkoutSummary sets={setsToday} profile={profile} title='Next Workout' />
             <WorkoutSummary sets={setsYesterday} profile={profile} title='Last Workout' />
-            <Grid item sx={{ ...styles.boxStyle, ...styles.boxLeft }} xs={12} sm={6}>
-                <Grid sx={styles.dashboardContent}>
-                    <Typography variant="h2" sx={styles.dashboardBoxTitle}>Last Workout</Typography>
-                </Grid>
-            </Grid>
             <Grid sx={styles.boxStyle} xs={12} sm={6}>
                 Starting Maxes
             </Grid>
