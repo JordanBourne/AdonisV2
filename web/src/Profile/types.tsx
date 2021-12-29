@@ -1,3 +1,4 @@
+import { String } from 'lodash';
 import { lift, ProgramDto, trainingMax } from '../Programs/types';
 export type liftName = 'bench press'
     | 'back squat'

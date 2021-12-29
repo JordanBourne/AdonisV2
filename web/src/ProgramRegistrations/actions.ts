@@ -15,7 +15,8 @@ export const createProgramRegistrationObject = async (program: ProgramDb, progra
         cognitoIdentityId: 'COGNITO_IDENTITY_ID',
         programRegistrationId: uuidv4(),
         programId: program.programId,
-        days: Object.keys(programConfiguration.days)
+        days: Object.keys(programConfiguration.days).map(Number),
+        weeks: Object.keys(program.setScheme.weeks).map(Number)
     };
     await sendDynamoCommand(new PutItemCommand({
         Item: marshall(programRegistration),

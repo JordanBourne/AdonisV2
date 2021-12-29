@@ -55,12 +55,16 @@ const addCognitoIdentityIdToQuery = (command: QueryCommand, cognitoIdentityId: s
 };
 
 export interface FetchSetsForDayProps {
-    week: number;
-    day: number;
+    week: number|null;
+    day: number|null;
     programRegistrationId: string;
 };
 export const fetchSetsForDay = async (props: FetchSetsForDayProps, LastEvaluatedKey?: any ): Promise<void> => {    
     console.group('fetchSetsForDay');
+    console.log({ week: props.week, day: props.day })
+    if (props.week === null || props.day === null) {
+        return;
+    }
     const queryCommand = new QueryCommand({
         KeyConditionExpression: 'cognitoIdentityId = :cognitoIdentityId and programRegistrationIdWeekDay = :programRegistrationIdWeekDay',
         ExpressionAttributeValues: {

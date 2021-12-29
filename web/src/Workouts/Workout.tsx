@@ -98,7 +98,7 @@ export const Workout = () => {
                                 onChange={(event) => goto(week, event.target.value)}
                             >
                                 {programRegistration.days
-                                    .map((val: string) => {
+                                    .map((val: number) => {
                                         return (<MenuItem key={val} value={val}>{val}</MenuItem>);
                                     })}
                             </Select>
@@ -119,7 +119,7 @@ export const Workout = () => {
                         </Grid>
                     </Grid>);
                 })}
-                <button onClick={completeWorkout}>complete workout placeholder button</button>
+                <button onClick={() => completeWorkout(week, day)}>complete workout placeholder button</button>
             </Grid>
         </Grid>
     )

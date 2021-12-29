@@ -33,7 +33,9 @@ export default function authReducers(state = initialState, action: any) {
     case SetMyProfile:
       return {
         ...state,
-        myProfile: action.myProfile
+        myProfile: {
+          ...action.myProfile
+        }
       };
     default:
       return state

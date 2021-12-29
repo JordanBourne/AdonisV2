@@ -10,6 +10,3 @@ export const MinusRepActionFn = (set: SetDb) => ({ type: MinusRep, set });
 
 export const SetHasUnsavedChanges = 'Set/HasUnsavedChanges';
 export const SetHasUnsavedChangesActionFn = (set: SetDb) => ({ type: SetHasUnsavedChanges, set });
-
-export const SetHasBeenSaved = 'Set/HasBeenSaved';
-export const SetHasBeenSavedActionFn = (set: SetDb) => ({ type: SetHasBeenSaved, set });

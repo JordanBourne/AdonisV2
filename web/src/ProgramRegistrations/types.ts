@@ -2,5 +2,6 @@ export interface ProgramRegistrationDb {
     cognitoIdentityId: string;
     programRegistrationId: string;
     programId: string;
-    days: string[];
+    days: number[];
+    weeks: number[];
 };

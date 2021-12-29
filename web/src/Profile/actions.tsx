@@ -64,6 +64,7 @@ export const setMyProfile = async (myProfile: ProfileDb): Promise<void> => {
         TableName: DynamoDBTableName
     });
     await sendDynamoCommand(command);
+    store.dispatch(SetMyProfileAction(myProfile));
 };
 
 export const registerProfileToProgramRegistrationObject = async (programRegistration: ProgramRegistrationDb): Promise<void> => {

@@ -1,4 +1,4 @@
-import { SetHasUnsavedChanges, SetHasBeenSaved } from './action-symbols';
+import { SetHasUnsavedChanges, SetIsFetched } from './action-symbols';
 
 interface UnsavedSetChanges {
     [key: string]: boolean
@@ -13,7 +13,7 @@ export default function authReducers(state = initialState, action: any) {
                 ...state,
                 [action.set.setId]: true
             };
-        case SetHasUnsavedChanges:
+        case SetIsFetched:
             delete state[action.set.setId]
             return {
                 ...state
