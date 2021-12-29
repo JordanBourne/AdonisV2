@@ -19,7 +19,13 @@ const WorkoutSummary = ({ sets, profile, title }: { sets: SetDb[], profile: Prof
     const setsByMovement: { [key: string]: SetDb[] } = groupBy(sets, 'movement') as { [key: string]: SetDb[] };
     const ormsByMovement = useSelector(selectAllOrmsByMovement);
     if (!sets.length) {
-        return null;
+        return (
+            <Grid item sx={{ ...styles.boxStyle, ...styles.boxRight }} xs={12} sm={6}>
+                <Grid sx={styles.dashboardContent}>
+                <Typography variant="h2" sx={styles.dashboardBoxTitle}>{title}</Typography>
+                </Grid>
+            </Grid>
+        );
     }
     const ormsBySetId: { [key: string]: OrmDb } = {};
     for (const set of sets) {
