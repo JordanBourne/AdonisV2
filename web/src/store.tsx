@@ -8,6 +8,8 @@ import orm from './Orms/store';
 import allPrograms from './Programs/all-programs-store';
 import programRegistrations from './ProgramRegistrations/store';
 import unsavedSetChanges from './Sets/unsaved-set-changes-store';
+import autoregulationSchemes from './AutoregulationSchemes/store';
+import progress from './Progress/progress-store';
 
 const loggerMiddleware = (storeAPI : any) => (next : any) => (action : any) => {
   let result = next(action)
@@ -25,7 +27,9 @@ const rootReducer = combineReducers({
   allPrograms,
   orm,
   programRegistrations,
-  unsavedSetChanges
+  unsavedSetChanges,
+  autoregulationSchemes,
+  progress
 });
 
 

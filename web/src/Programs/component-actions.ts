@@ -7,9 +7,12 @@ import { getAuthenticatedDynamoDBClient } from '../util/dynamo';
 import { ProgramConfiguration, MovementConfiguration } from './types';
 import { batchAndSaveOneRepMaxesToDb } from '../Orms/actions';
 import { OrmDb } from '../Orms/types';
+import { MarkCompleteActionFn, AddTodosActionFn, CompleteTodosActionFn } from '../Progress/action-symbols';
+import { store } from '../store';
 import * as uuid from 'uuid';
 
-export const registerForProgram = async (program : ProgramDb, programConfiguration : ProgramConfiguration) => {    
+export const registerForProgram = async (program : ProgramDb, programConfiguration : ProgramConfiguration) => {
+    store.dispatch(MarkCompleteActionFn('program-registration'));
     const output = await getAuthenticatedDynamoDBClient();
     if (output === null) {
         throw ('Could not reach out to dynamo since the client hasnt authenticated. This function should not have been called.');
@@ -18,7 +21,6 @@ export const registerForProgram = async (program : ProgramDb, programConfigurati
     if (!cognitoIdentityId) {
         throw ('Could not reach out to dynamo since the client hasnt authenticated. This function should not have been called.');
     }
-    console.log('Creating program registration');
     const programRegistrationDb = await createProgramRegistrationObject(program, programConfiguration);
     await registerProfileToProgramRegistrationObject(programRegistrationDb);
     const allSets : SetDb[] = []
@@ -40,16 +42,14 @@ export const registerForProgram = async (program : ProgramDb, programConfigurati
                         index: Number(setIdx),
                         percentOrm: week[movement.assignment].sets[setIdx].percent,
                         repsExpected: week[movement.assignment].sets[setIdx].repsExpected,
-                        repsCompleted: null
+                        repsCompleted: null,
+                        weightLifted: null
                     };
                     allSets.push(set)
                 }
             }
         }
     }
-
-    console.log('Creating sets');
-    await batchAndSaveSetsToDb(allSets);
 
     const allMovements : OrmDb[] = [];
     for(const dayIdx in programConfiguration.days) {
@@ -83,6 +83,17 @@ export const registerForProgram = async (program : ProgramDb, programConfigurati
         }
     }
 
-    console.log('Creating oneRepMaxes');
-    await batchAndSaveOneRepMaxesToDb(allMovements);
+    store.dispatch(AddTodosActionFn('program-registration', allSets.length));
+    store.dispatch(AddTodosActionFn('program-registration', allMovements.length));
+
+    await batchAndSaveSetsToDb(allSets, async(setsSaved : SetDb[]) => {
+        store.dispatch(CompleteTodosActionFn('program-registration', setsSaved.length))
+    });
+
+    await batchAndSaveOneRepMaxesToDb(allMovements, async(ormsSaved : OrmDb[]) => {
+        store.dispatch(CompleteTodosActionFn('program-registration', ormsSaved.length))
+    });
+
+    
+    store.dispatch(MarkCompleteActionFn('program-registration'));
 };

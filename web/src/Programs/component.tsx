@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 
-import { Container, Typography, Box, Avatar, CssBaseline, Card, CardContent, CardActions, Button } from '@mui/material';
+import { LinearProgress, Stack, Container, Typography, Box, Avatar, CssBaseline, Card, CardContent, CardActions, Button, Backdrop, CircularProgress } from '@mui/material';
 import { BallotOutlined } from '@mui/icons-material';
 
 import { registerForProgram } from './component-actions';
 import { selectAllPrograms } from './selectors';
 import { myProgramConfiguration } from './mocks';
+import { ProgramDb } from './types';
+import { selectPercentComplete } from '../Progress/selectors';
 
 const styles = {
     setCounter: {
@@ -24,11 +26,26 @@ const styles = {
     }
 }
 
+const LoadingComponent = () => {
+};
+
 export const Programs = () => {
     const allPrograms = useSelector(selectAllPrograms);
+    const percentComplete = useSelector(selectPercentComplete('program-registration'));
+    const registerForProgramComponentAction = (program: ProgramDb) => {
+        registerForProgram(program, myProgramConfiguration)
+    };
     return (
         <Container component="main" maxWidth="xs">
             <CssBaseline />
+            <Backdrop
+                sx={{ color: '#fff', zIndex: 20 }}
+                open={percentComplete !== null}
+            >
+                <Typography variant="h4">
+                    Registering ({Math.round(percentComplete as number * 100)}%)...
+                </Typography>
+            </Backdrop>
             <Box
                 sx={{
                     marginTop: 8,
@@ -54,7 +71,7 @@ export const Programs = () => {
                                     {program.name}
                                 </Typography>
                                 <Typography variant="body2">
-                                    {program.descriptions.map((description : string, idx : number) => {
+                                    {program.descriptions.map((description: string, idx: number) => {
                                         if (idx === 0) return description;
                                         return (
                                             <React.Fragment>
@@ -65,7 +82,7 @@ export const Programs = () => {
                                 </Typography>
                             </CardContent>
                             <CardActions>
-                                <Button size="small" onClick={() => registerForProgram(program, myProgramConfiguration)}>Register</Button>
+                                <Button size="small" onClick={() => registerForProgramComponentAction(program)}>Register</Button>
                             </CardActions>
                         </Card>
                     ))}

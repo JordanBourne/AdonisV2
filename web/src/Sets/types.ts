@@ -9,6 +9,7 @@ export interface SetDb {
     week: number;
     index: number;
     percentOrm: number;
+    weightLifted: number|null;
     repsExpected: number;
     repsCompleted: number|null;
 };
@@ -19,12 +20,3 @@ export interface ProfileDb {
   week: number;
   day: number;
 };
-
-export interface OrmDb {
-  cognitoIdentityId: string;
-  movement: string;
-  weight: number;
-  reps: number;
-  calculatedOrm: number;
-  setUniqueId: string;
-}

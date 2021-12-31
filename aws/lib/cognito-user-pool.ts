@@ -13,6 +13,7 @@ interface CreateProfilesTableProps {
     ProgramsTable: dynamodb.Table;
     ProgramRegistrationsTable: dynamodb.Table;
     OrmTable: dynamodb.Table;
+    AutoregulationSchemesTable: dynamodb.Table;
 };
 
 export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfilesTableProps) => {
@@ -76,9 +77,11 @@ export const createCognitoUserPool = (scope: cdk.Construct, props: CreateProfile
     props.ProgramsTable.grantReadWriteData(authenticatedRowLevelAccess);
     props.MovementsTable.grantReadWriteData(authenticatedRowLevelAccess);
     props.OrmTable.grantReadWriteData(authenticatedRowLevelAccess);
+    props.AutoregulationSchemesTable.grantReadWriteData(authenticatedRowLevelAccess);
 
     props.MovementsTable.grantReadData(authenticatedRole);
     props.ProgramsTable.grantReadData(authenticatedRole);
+    props.AutoregulationSchemesTable.grantReadData(authenticatedRole);
 
     const defaultPolicy = new cognito.CfnIdentityPoolRoleAttachment(scope, `${props.prefix}CognitoDefaultPolicy`, {
         identityPoolId: identityPool.ref,

@@ -25,6 +25,7 @@ import { fetchLatestOrms } from './Orms/actions';
 import { fetchProgramRegistration } from './ProgramRegistrations/actions';
 import { loadMockSbsRtf } from './Programs/actions';
 import { ProfileDb } from './Profile/types';
+import { fetchAllAutoregulationSchemes } from './AutoregulationSchemes/actions';
 
 // login();
 
@@ -33,15 +34,14 @@ function App() {
   useEffect(() => {
     checkExistingUserSession()
       .then(loadMockSbsRtf)
+      .then(fetchAllAutoregulationSchemes)
       .then(fetchMyProfile)
       .then((myProfile: ProfileDb|null) => {
         if (myProfile?.programRegistrationId) {
           return fetchProgramRegistration(myProfile.programRegistrationId);
         }
       })
-      .then(() => console.log('before'))
-      .then(fetchLatestOrms)
-      .then(() => console.log('after'));
+      .then(() => fetchLatestOrms())
   }, []);
   return (
     <div>

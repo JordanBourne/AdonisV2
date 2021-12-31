@@ -26,6 +26,7 @@ export interface completedWorkout {
 
 export interface ProfileDb {
     programRegistrationId: string|null;
+    autoregulationSchemeId: string|null;
     programId: string|null;
     week: number|null;
     day: number|null;

@@ -9,11 +9,24 @@ import { sendDynamoCommand } from '../util/dynamo';
 import { MovementConfiguration } from '../Programs/types';
 import { chunk, pick } from 'lodash';
 
-export const batchAndSaveOneRepMaxesToDb = async (orms: OrmDb[]) => {
-    await Promise.all(chunk(orms, 25).map(createChunkOfOneRepMaxes));
+
+
+type EachCallback = (ormDb: OrmDb[]) => void;
+const DefaultEachCallback = (_ormDb: OrmDb[]) => {
+    return;
 };
 
-export const createChunkOfOneRepMaxes = async (orms: OrmDb[]): Promise<void> => {
+export const batchAndSaveOneRepMaxesToDb = async (orms: OrmDb[], eachCallback : EachCallback = DefaultEachCallback) => {
+    await Promise.all(
+        chunk(orms, 25)
+        .map(
+            (setOfOrms) => createChunkOfOneRepMaxes(setOfOrms)
+                .then(eachCallback)
+        )
+    );
+};
+
+export const createChunkOfOneRepMaxes = async (orms: OrmDb[]): Promise<OrmDb[]> => {
     const batchWriteItemCommand = new BatchWriteItemCommand({
         RequestItems: {
             [DynamoDBTableName]: orms.map(orm => {
@@ -28,10 +41,13 @@ export const createChunkOfOneRepMaxes = async (orms: OrmDb[]): Promise<void> => 
     });
     const output = await sendDynamoCommand( batchWriteItemCommand, null );
     for (const ormDb of orms) {
-        store.dispatch(
-            OrmIsFetchedActionFn(ormDb)
-        );
+        if (ormDb.label === 'latest') {
+            store.dispatch(
+                OrmIsFetchedActionFn(ormDb)
+            );
+        }
     }
+    return orms;
 };
 
 const addCognitoIdentityIdToQuery = (command: QueryCommand, cognitoIdentityId: string) => {
@@ -39,7 +55,6 @@ const addCognitoIdentityIdToQuery = (command: QueryCommand, cognitoIdentityId: s
 };
 
 export const fetchLatestOrms = async (LastEvaluatedKey?: any ): Promise<void> => {    
-    console.group('fetchLatestOrms');
     const queryCommand = new QueryCommand({
         KeyConditionExpression: 'cognitoIdentityId = :cognitoIdentityId and #label = :label',
         ExpressionAttributeValues: {
@@ -55,6 +70,9 @@ export const fetchLatestOrms = async (LastEvaluatedKey?: any ): Promise<void> =>
         Limit: 15,
     });
     const queryResults = await sendDynamoCommand( queryCommand, addCognitoIdentityIdToQuery );
+    if (!queryResults?.Items?.length) {
+        return;
+    }
     const batchGetItemCommand = new BatchGetItemCommand({
         RequestItems: {
             [DynamoDBTableName]: {
@@ -71,5 +89,4 @@ export const fetchLatestOrms = async (LastEvaluatedKey?: any ): Promise<void> =>
     if (queryResults.LastEvaluatedKey) {
         await fetchLatestOrms(queryResults.LastEvaluatedKey);
     }
-    console.groupEnd();
 };

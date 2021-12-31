@@ -13,6 +13,7 @@ const { v4: uuidv4 } = require('uuid');
 export const createProgramRegistrationObject = async (program: ProgramDb, programConfiguration: ProgramConfiguration) => {
     const programRegistration: ProgramRegistrationDb = {
         cognitoIdentityId: 'COGNITO_IDENTITY_ID',
+        autoregulationSchemeId: program.autoregulationSchemeId,
         programRegistrationId: uuidv4(),
         programId: program.programId,
         days: Object.keys(programConfiguration.days).map(Number),
@@ -28,7 +29,6 @@ export const createProgramRegistrationObject = async (program: ProgramDb, progra
 
 export const fetchProgramRegistration = async (programRegistrationId: string): Promise<ProgramRegistrationDb | null> => {
     try {
-        console.group('FetchProgramRegistration');
         const command = new GetItemCommand({
             ConsistentRead: true,
             Key: {
@@ -44,16 +44,11 @@ export const fetchProgramRegistration = async (programRegistrationId: string): P
         const response = await sendDynamoCommand(command);
         const responseItem = response?.Item ? unmarshall(response.Item) as ProgramRegistrationDb : null;
         if (responseItem === null) {
-            console.log('Program Registration');
-            console.groupEnd();
             throw ({
                 code: 'PROGRAM_REGISTRATION_NOT_FOUND'
             });
         }
-        console.log('Program Registration has been found');
-        console.log(responseItem);
         store.dispatch(ProgramIsFetchedActionFn(responseItem));
-        console.groupEnd();
         return responseItem;
     } catch (e) {
         throw (e);

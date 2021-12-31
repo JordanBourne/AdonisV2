@@ -14,8 +14,6 @@ export const selectNextDay = (programRegistrationId: string|null|undefined, week
     const weekIdx = weeks.indexOf(week);
     const days = programRegistration.days;
     const dayIdx = days.indexOf(day);
-    console.log(days);
-    console.log(day);
     if (day === last(days)) {
         if (week === last(weeks)) {
             return { week: null, day: null };

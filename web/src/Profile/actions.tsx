@@ -11,7 +11,6 @@ import { ProgramRegistrationDb } from '../ProgramRegistrations/types';
 
 export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
     try {
-        console.group('FetchProfile');
         const command = new GetItemCommand({
             ConsistentRead: true,
             Key: {
@@ -22,20 +21,13 @@ export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
             TableName: DynamoDBTableName
         });
         const response = await sendDynamoCommand(command);
-        console.log(command.input.Key);
-        console.log(response);
         const responseItem = response?.Item ? unmarshall(response.Item) as ProfileDb : null;
         if (responseItem === null) {
-            console.log('Profile not found');
-            console.groupEnd();
             throw({
                 code: 'PROFILE_NOT_FOUND'
             });
         }
-        console.log('Profile has been found');
-        console.log(responseItem);
         store.dispatch(SetMyProfileAction(responseItem));
-        console.groupEnd();
         return responseItem;
     } catch (e) {
         throw (e);
@@ -44,6 +36,7 @@ export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
 
 export const createProfile = async () => {
     await setMyProfile({
+        autoregulationSchemeId: null,
         programRegistrationId: null,
         programId: null,
         week: null,
@@ -72,12 +65,13 @@ export const registerProfileToProgramRegistrationObject = async (programRegistra
         Key: {
             'cognitoIdentityId': { 'S': 'COGNITO_IDENTITY_ID' }
         },
-        UpdateExpression: 'SET week=:week, #day=:day, programRegistrationId=:programRegistrationId, programId=:programId',
+        UpdateExpression: 'SET week=:week, #day=:day, programRegistrationId=:programRegistrationId, programId=:programId, autoregulationSchemeId=:autoregulationSchemeId',
         ExpressionAttributeValues: {
             ':week': { 'N': '1' },
             ':day': { 'N': '1' },
             ':programRegistrationId': { 'S': programRegistration.programRegistrationId },
-            ':programId': { 'S': programRegistration.programId }
+            ':programId': { 'S': programRegistration.programId },
+            ':autoregulationSchemeId': { 'S': programRegistration.autoregulationSchemeId }
         },
         ExpressionAttributeNames: {
             '#day': 'day',

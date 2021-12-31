@@ -3,6 +3,7 @@ export interface ProgramDto {
     title: string;
     descriptions: string[];
     setScheme: setScheme;
+    autoregulationSchemeId: string;
 }
 
 export interface ProgramDb extends ProgramDto {

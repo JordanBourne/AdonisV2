@@ -1655,7 +1655,8 @@ export const SBS_RTF: ProgramDto = {
         'Primary and Auxiliary movements',
         'Automated progression regulation',
     ],
-    setScheme: SBS_RTF_SET_SCHEME
+    setScheme: SBS_RTF_SET_SCHEME,
+    autoregulationSchemeId: 'fe606708-6920-11ec-90d6-0242ac120003',
 };
 
 export const dansProgramConfiguration: ProgramConfiguration = {

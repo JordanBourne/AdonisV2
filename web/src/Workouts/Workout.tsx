@@ -18,6 +18,7 @@ import { selectProgramRegistration } from '../ProgramRegistrations/selectors';
 import { SetDb } from '../Sets/types';
 import { OrmDb } from '../Orms/types';
 import { styles } from './styles';
+import { calcWeight } from './util';
 
 import { NeedToRegisterForProgram } from './need-to-register-for-program';
 import { NeedToSignIn } from './need-to-sign-in';
@@ -50,12 +51,12 @@ export const Workout = () => {
             });
         }
     }, [day, week, programRegistrationId]);
+
     if (!programRegistrationId
         || !week
         || !day
         || !program
         || !programRegistration
-        || !programRegistrationId
         || !Object.keys(ormsByMovement).length) {
         return (<NeedToRegisterForProgram />);
     }
@@ -109,11 +110,11 @@ export const Workout = () => {
                     return (<Grid item container sx={styles.movementsContainer} key={movement}>
                         <Grid item>
                             <Typography sx={styles.movementName}>{titleCaseString(movement)}</Typography>
-                            <Typography sx={styles.movementWeight}>{Math.round(ormsByMovement[movement]?.calcOrm * setsByMovement[movement][1]?.percentOrm) + ' lbs'}</Typography>
-                            <Typography sx={styles.movementWeight}>(.95 {Math.round(ormsByMovement[movement]?.calcOrm * setsByMovement[movement][0]?.percentOrm) + ' lbs'})</Typography>
+                            <Typography sx={styles.movementWeight}>{calcWeight(ormsByMovement[movement] as OrmDb, setsByMovement[movement][1] as SetDb) + ' lbs'}</Typography>
+                            <Typography sx={styles.movementWeight}>.95 {calcWeight(ormsByMovement[movement] as OrmDb, setsByMovement[movement][0] as SetDb)}  lbs</Typography>
                         </Grid>
                         <Grid item sx={styles.setContainer}>
-                            {setsByMovement[movement].map((set: SetDb) => (<SetButton setId={set.setId} />))}
+                            {setsByMovement[movement].map((set: SetDb) => (<SetButton key={set.setId} setId={set.setId} />))}
                             <Grid item key={`${movement}-add`} sx={styles.setRepButton} onClick={() => addRep(last(setsByMovement[movement]))}>+</Grid>
                             <Grid item key={`${movement}-minus`} sx={styles.setRepButton} onClick={() => minusRep(last(setsByMovement[movement]))}>-</Grid>
                         </Grid>

@@ -42,8 +42,6 @@ export const getCognitoUserSession = async (): Promise<AmazonCognitoIdentity.Cog
 
   const sessionIsValid = cognitoUserSession.isValid();
 
-  console.log(`Checking if session is valid: ${sessionIsValid}`);
-
   if (sessionIsValid) {
     return cognitoUserSession;
   }

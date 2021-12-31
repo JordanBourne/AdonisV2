@@ -11,7 +11,6 @@ export const selectSetsForDay = (props: SelectSetsForDayProps) => (state: RootSt
     if (props.week === null || props.day === null || props.programRegistrationId === null) {
         return [];
     }
-    console.group('selectSetsForDay');
     const sets : SetDb[] = [];
     for (const setId in state.sets) {
         const set = state.sets[setId];
@@ -21,7 +20,6 @@ export const selectSetsForDay = (props: SelectSetsForDayProps) => (state: RootSt
                 sets.push(set);
             }
     }
-    console.groupEnd();
     return sets;
 };
 

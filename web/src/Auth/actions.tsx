@@ -12,9 +12,6 @@ export const checkExistingUserSession = async () => {
   });
   const cognitoUser = userPool.getCurrentUser();
 
-  console.log(`Checking if cognito user exists: ${cognitoUser !== null}`);
-  console.log(cognitoUser);
-
   if (cognitoUser !== null) {
     const session: AmazonCognitoIdentity.CognitoUserSession = await new Promise((resolve, reject) => {
       cognitoUser.getSession(function (err: any, session: AmazonCognitoIdentity.CognitoUserSession) {
@@ -27,8 +24,6 @@ export const checkExistingUserSession = async () => {
     });
 
     const sessionIsValid = session.isValid();
-
-    console.log(`Checking if session is valid: ${sessionIsValid}`);
 
     if (sessionIsValid) {
       store.dispatch(SetCognitoUserAction(cognitoUser));

@@ -10,3 +10,6 @@ export const MinusRepActionFn = (set: SetDb) => ({ type: MinusRep, set });
 
 export const SetHasUnsavedChanges = 'Set/HasUnsavedChanges';
 export const SetHasUnsavedChangesActionFn = (set: SetDb) => ({ type: SetHasUnsavedChanges, set });
+
+export const RememberWeightLiftedForSet = 'Set/RememberWeightLifted';
+export const RememberWeightLiftedForSetActionFn = (set: SetDb) => ({ type: RememberWeightLiftedForSet, set });

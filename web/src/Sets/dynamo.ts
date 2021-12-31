@@ -15,8 +15,22 @@ import { ProgramRegistrationDb } from '../ProgramRegistrations/types';
 import { chunk } from 'lodash';
 const { v4: uuidv4 } = require('uuid');
 
-export const batchAndSaveSetsToDb = async(sets: SetDb[]) => {
-    await Promise.all(chunk(sets, 25).map(createChunkOfSets));
+type EachCallback = (setDb: SetDb[]) => void;
+const DefaultEachCallback = (_setDb: SetDb[]) => {
+    return;
+};
+
+export const batchAndSaveSetsToDb = async(
+        sets: SetDb[],
+        eachCallback: EachCallback = DefaultEachCallback
+) => {
+    await Promise.all(
+        chunk(sets, 25)
+            .map(
+                (setBatch) => createChunkOfSets(setBatch)
+                    .then(eachCallback)
+            )
+    );
 };
 
 export interface CreateSetFromProgramObjectProps {
@@ -29,7 +43,7 @@ export interface CreateSetFromProgramObjectProps {
     repsExpected: number;
 };
 
-export const createChunkOfSets = async (sets: SetDb[]): Promise<void> => {
+export const createChunkOfSets = async (sets: SetDb[]): Promise<SetDb[]> => {
     const batchWriteItemCommand = new BatchWriteItemCommand({
         RequestItems: {
             [DynamoDBTableName]: sets.map(set => {
@@ -48,6 +62,7 @@ export const createChunkOfSets = async (sets: SetDb[]): Promise<void> => {
             SetIsFetchedActionFn(setDb)
         );
     }
+    return sets;
 };
 
 const addCognitoIdentityIdToQuery = (command: QueryCommand, cognitoIdentityId: string) => {
@@ -60,8 +75,6 @@ export interface FetchSetsForDayProps {
     programRegistrationId: string;
 };
 export const fetchSetsForDay = async (props: FetchSetsForDayProps, LastEvaluatedKey?: any ): Promise<void> => {    
-    console.group('fetchSetsForDay');
-    console.log({ week: props.week, day: props.day })
     if (props.week === null || props.day === null) {
         return;
     }
@@ -93,7 +106,6 @@ export const fetchSetsForDay = async (props: FetchSetsForDayProps, LastEvaluated
     if (queryResults.LastEvaluatedKey) {
         await fetchSetsForDay(props, queryResults.LastEvaluatedKey);
     }
-    console.groupEnd();
 };
 
 export const fetchSet = async (setId: string): Promise<void> => {

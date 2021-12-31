@@ -8,9 +8,7 @@ interface RateLimitedTask {
 }
 
 const DynamoRateLimiting = queue(async(task : RateLimitedTask) => {
-    console.log('starting');
     const output = await task.dynamoDbClient.send(task.command);
-    console.log('finishing');
     return output;
 }, 10);
 
