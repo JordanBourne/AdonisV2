@@ -1,0 +1,28 @@
+{
+  "root": "apps/adonis-e2e",
+  "sourceRoot": "apps/adonis-e2e/src",
+  "projectType": "application",
+  "targets": {
+    "e2e": {
+      "executor": "@nrwl/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/adonis-e2e/cypress.json",
+        "devServerTarget": "adonis:serve"
+      },
+      "configurations": {
+        "production": {
+          "devServerTarget": "adonis:serve:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/adonis-e2e/**/*.{js,ts}"]
+      }
+    }
+  },
+  "tags": [],
+  "implicitDependencies": ["adonis"]
+}

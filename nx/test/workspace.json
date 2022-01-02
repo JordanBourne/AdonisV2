@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "projects": {
+    "adonis": "apps/adonis",
+    "adonis-e2e": "apps/adonis-e2e"
+  }
+}
