@@ -24,18 +24,24 @@ export const getCognitoUserSession = async (): Promise<AmazonCognitoIdentity.Cog
     UserPoolId,
     ClientId: UserPoolClientId,
   });
+  console.log('get current user');
   const cognitoUser = userPool.getCurrentUser();
+  console.log('got user');
 
   if (cognitoUser === null) {
     return null;
   }
 
+  console.log('get session starting');
   const cognitoUserSession: AmazonCognitoIdentity.CognitoUserSession = await new Promise((resolve, reject) => {
+    console.log('getting session');
     cognitoUser.getSession(function (err: any, session: AmazonCognitoIdentity.CognitoUserSession) {
       if (err) {
+        console.error(err);
         return reject(err.message || JSON.stringify(err));
       }
 
+      console.log('got session');
       return resolve(session);
     });
   });
@@ -61,7 +67,9 @@ export const getCognitoIdentityId = async (cognitoUserSession: AmazonCognitoIden
     },
   });
 
+  console.log('getting id');
   const { IdentityId } = await cognitoIdentityClient.send(command);
+  console.log('got id');
 
   if (!IdentityId) {
     throw new Error('Could not obtain identity id');

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Avatar, Button, CssBaseline, TextField, FormControlLabel, Checkbox, Link, Grid, Box, Typography, Container } from '@mui/material';
 import { LockOutlined } from '@mui/icons-material';
 import { signIn } from './actions';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, NavLink } from 'react-router-dom';
 import { fetchMyProfile, createProfile } from '../../Profile/actions';
 const LockOutlinedIcon = LockOutlined;
 
@@ -44,19 +44,20 @@ export const SignIn = () => {
     const data = new FormData(event.currentTarget);
     const username = data.get('username');
     const password = data.get('password');
+    console.log("signing in");
     signIn({
       username: username as string,
       password: password as string
     }).then(() => {
+      console.log('signed in, fetching');
       return fetchMyProfile()
-       .catch((error : any) => {
-        if (error?.code === 'PROFILE_NOT_FOUND') {
-          return createProfile();
-        }
-        throw(error);
-       })
-    }).then(() => {
-      return fetchMyProfile();
+        .catch((error: any) => {
+          console.error(error);
+          if (error?.code === 'PROFILE_NOT_FOUND') {
+            return createProfile();
+          }
+          throw (error);
+        })
     }).then(() => {
       navigate('/home');
     });
@@ -135,9 +136,11 @@ export const SignIn = () => {
               </Link>
             </Grid>
             <Grid item>
-              <Link href="/signup" variant="body2">
-                {"Don't have an account? Sign Up"}
-              </Link>
+              <a href="#">
+                <NavLink className="navBarButton" to="/signup">
+                  Don't have an account? Sign Up
+                </NavLink>
+              </a>
             </Grid>
           </Grid>
         </Box>
@@ -145,3 +148,4 @@ export const SignIn = () => {
     </Container>
   );
 };
+

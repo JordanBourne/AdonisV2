@@ -11,6 +11,7 @@ import { ProgramRegistrationDb } from '../ProgramRegistrations/types';
 
 export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
     try {
+        console.log('prepping command');
         const command = new GetItemCommand({
             ConsistentRead: true,
             Key: {
@@ -20,7 +21,9 @@ export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
             },
             TableName: DynamoDBTableName
         });
+        console.log('sending command');
         const response = await sendDynamoCommand(command);
+        console.log('command sent');
         const responseItem = response?.Item ? unmarshall(response.Item) as ProfileDb : null;
         if (responseItem === null) {
             throw({
@@ -30,6 +33,7 @@ export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
         store.dispatch(SetMyProfileAction(responseItem));
         return responseItem;
     } catch (e) {
+        console.error(e);
         throw (e);
     }
 };

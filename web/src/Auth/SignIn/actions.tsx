@@ -26,9 +26,19 @@ export const signIn = async({username, password} : ParametersSignIn) : Promise<v
                 Username: username,
                 Password: password,
             }), {
-            onSuccess: (cognitoUserSession) => resolve(cognitoUserSession),
-            newPasswordRequired: (userAttributes, requiredAttributes) => reject('new password required, not implemented'),
-            onFailure: (err) => reject(err.message || JSON.stringify(err))
+            onSuccess: (cognitoUserSession) => {
+                console.log("Auth success");
+                resolve(cognitoUserSession)
+            },
+            newPasswordRequired: (userAttributes, requiredAttributes) => {
+                console.log('new password');
+                reject('new password required, not implemented')
+            },
+            onFailure: (err) => {
+                console.log('failure');
+                console.log(err);
+                reject(err.message || JSON.stringify(err))
+            }
         });
     });
 
