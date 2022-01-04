@@ -25,6 +25,7 @@ export interface completedWorkout {
 }
 
 export interface ProfileDb {
+    cognitoIdentityId: string;
     programRegistrationId: string|null;
     autoregulationSchemeId: string|null;
     programId: string|null;

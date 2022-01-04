@@ -11,7 +11,7 @@ import { Dispatch } from 'react';
 import { ObjectEntries } from '../util/util';
 import { fetchSet } from './dynamo';
 import { selectSet } from './selectors';
-import { setCompleted } from './component-actions';
+import { toggleSetCompletion } from './component-actions';
 
 const styles = {
     setCounter: {
@@ -39,7 +39,7 @@ export const SetButton = (props : SetButtonProps) => {
             item
             key={props.setId}
             sx={{ ...styles.setCounter, ...(set.repsCompleted !== null ? styles.completedSet : {}) }}
-            onClick={() => setCompleted(set)}
+            onClick={() => toggleSetCompletion(set)}
             >
             {set.repsCompleted ?? set.repsExpected}
         </Grid>

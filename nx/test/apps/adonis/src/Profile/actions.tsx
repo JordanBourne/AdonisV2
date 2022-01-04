@@ -20,7 +20,6 @@ export const checkAndFetchMyProfile = async() => {
 
 export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
     try {
-        console.log('prepping command');
         const command = new GetItemCommand({
             ConsistentRead: true,
             Key: {
@@ -30,9 +29,7 @@ export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
             },
             TableName: DynamoDBTableName
         });
-        console.log('sending command');
         const response = await sendDynamoCommand(command);
-        console.log('command sent');
         const responseItem = response?.Item ? unmarshall(response.Item) as ProfileDb : null;
         if (responseItem === null) {
             throw({
@@ -49,6 +46,7 @@ export const fetchMyProfile = async (): Promise<ProfileDb | null> => {
 
 export const createProfile = async () => {
     await setMyProfile({
+        cognitoIdentityId: 'COGNITO_IDENTITY_ID', // will be replaced later
         autoregulationSchemeId: null,
         programRegistrationId: null,
         programId: null,

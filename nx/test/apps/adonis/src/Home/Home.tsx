@@ -43,7 +43,7 @@ const WorkoutSummary = ({ sets, profile, title }: { sets: SetDb[], profile: Prof
                                 return map(groupBy(setsForOrm, 'repsExpected'), (similarSets, repsExpected: string) => {
                                     return (
                                         <Typography sx={styles.workoutWeight}>
-                                            {similarSets.length} x {repsExpected} x {Number(percentOrm) * ormsByMovement[movement]?.calcOrm}
+                                            {similarSets.length} x {repsExpected} x {Math.round(Number(percentOrm) * ormsByMovement[movement]?.calcOrm)}
                                         </Typography>
                                     );
                                 })

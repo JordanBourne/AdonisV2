@@ -63,7 +63,7 @@ function App() {
             }
           });
       })
-  }, []);
+  }, [ profile?.cognitoIdentityId ]);
   useEffect(() => {
     if (programRegistrationId && week && day) {
       fetchSetsForDay({
