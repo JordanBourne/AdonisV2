@@ -16,23 +16,21 @@ import { batchAndSaveOneRepMaxesToDb } from '../Orms/actions';
 import { ExtraSetsAdjustOrm } from '../AutoregulationSchemes/types';
 import { calcWeight } from './util';
 import * as uuid from 'uuid';
-export const addRep = (set? : SetDb) => {
+export const addRep = async (set? : SetDb) => {
     if (!set) return;
     if (!set.repsCompleted) {
         set.repsCompleted = set.repsExpected;
     }
     set.repsCompleted++;
-    store.dispatch(SetIsFetchedActionFn(set));
-    store.dispatch(SetHasUnsavedChangesActionFn(set));
+    await batchAndSaveSetsToDb([ set ]);
 };
-export const minusRep = (set? : SetDb) => {
+export const minusRep = async (set? : SetDb) => {
     if (!set) return;
     if (!set.repsCompleted) {
         set.repsCompleted = set.repsExpected;
     }
     set.repsCompleted--;
-    store.dispatch(SetIsFetchedActionFn(set));
-    store.dispatch(SetHasUnsavedChangesActionFn(set));
+    await batchAndSaveSetsToDb([ set ]);
 };
 export const completeWorkout = async (week: number, day: number) => {
     const profile = selectMyProfile(store.getState());
