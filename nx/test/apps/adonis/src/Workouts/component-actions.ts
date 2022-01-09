@@ -16,6 +16,12 @@ import { batchAndSaveOneRepMaxesToDb } from '../Orms/actions';
 import { ExtraSetsAdjustOrm } from '../AutoregulationSchemes/types';
 import { calcWeight } from './util';
 import * as uuid from 'uuid';
+
+export const setActiveDay = async(profileDb: ProfileDb, week: number, day: number) => {
+    profileDb.week = week;
+    profileDb.day = day;
+    await setMyProfile(profileDb);
+};
 export const addRep = async (set? : SetDb) => {
     if (!set) return;
     if (!set.repsCompleted) {

@@ -19,6 +19,7 @@ import { SetDb } from '../Sets/types';
 import { OrmDb } from '../Orms/types';
 import { styles } from './styles';
 import { calcWeight } from './util';
+import { setActiveDay } from './component-actions';
 
 import { NeedToRegisterForProgram } from './need-to-register-for-program';
 import { NeedToSignIn } from './need-to-sign-in';
@@ -74,6 +75,7 @@ export const Workout = () => {
             <Grid container sx={styles.contentContainer}>
                 <Grid container sx={styles.workoutContainerTitle}>
                     <Typography sx={styles.workoutTitle}>Workout</Typography>
+                    <button onClick={() => setActiveDay(profile, week, day)}>Set active day</button>
                     <Grid item sx={styles.dropdownContainer}>
                         <FormControl variant="standard" sx={styles.dayDropdown}>
                             <InputLabel id="week-select-label">Week</InputLabel>
