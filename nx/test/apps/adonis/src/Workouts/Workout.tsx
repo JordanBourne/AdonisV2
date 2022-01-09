@@ -68,6 +68,7 @@ export const Workout = () => {
 
     const goto = (week: string | number, day: string | number) => {
         navigate(`/workout?week=${week}&day=${day}`);
+        setActiveDay(profile, Number(week), Number(day));
     };
 
     return (
@@ -75,7 +76,6 @@ export const Workout = () => {
             <Grid container sx={styles.contentContainer}>
                 <Grid container sx={styles.workoutContainerTitle}>
                     <Typography sx={styles.workoutTitle}>Workout</Typography>
-                    <button onClick={() => setActiveDay(profile, week, day)}>Set active day</button>
                     <Grid item sx={styles.dropdownContainer}>
                         <FormControl variant="standard" sx={styles.dayDropdown}>
                             <InputLabel id="week-select-label">Week</InputLabel>
