@@ -12,31 +12,31 @@ import { setMyProfile } from '../Profile/actions';
 import { ProfileDb } from '../Profile/types';
 import { selectAutoregulationScheme } from '../AutoregulationSchemes/selectors';
 import { selectAllOrmsByMovement } from '../Orms/selectors';
-import { batchAndSaveOneRepMaxesToDb } from '../Orms/actions';
+import { batchAndSaveOneRepMaxesToDb, fetchLatestOrms, fetchLatestOrmsByMovementLabel, fetchLatestOrmsByLabel, updateOrmLabel } from '../Orms/actions';
 import { ExtraSetsAdjustOrm } from '../AutoregulationSchemes/types';
 import { calcWeight } from './util';
 import * as uuid from 'uuid';
 
-export const setActiveDay = async(profileDb: ProfileDb, week: number, day: number) => {
+export const setActiveDay = async (profileDb: ProfileDb, week: number, day: number) => {
     profileDb.week = week;
     profileDb.day = day;
     await setMyProfile(profileDb);
 };
-export const addRep = async (set? : SetDb) => {
+export const addRep = async (set?: SetDb) => {
     if (!set) return;
     if (!set.repsCompleted) {
         set.repsCompleted = set.repsExpected;
     }
     set.repsCompleted++;
-    await batchAndSaveSetsToDb([ set ]);
+    await batchAndSaveSetsToDb([set]);
 };
-export const minusRep = async (set? : SetDb) => {
+export const minusRep = async (set?: SetDb) => {
     if (!set) return;
     if (!set.repsCompleted) {
         set.repsCompleted = set.repsExpected;
     }
     set.repsCompleted--;
-    await batchAndSaveSetsToDb([ set ]);
+    await batchAndSaveSetsToDb([set]);
 };
 export const completeWorkout = async (week: number, day: number) => {
     const profile = selectMyProfile(store.getState());
@@ -47,7 +47,7 @@ export const completeWorkout = async (week: number, day: number) => {
         set.weightLifted = calcWeight(ormsByMovement[set.movement], set);
     });
     await batchAndSaveSetsToDb(sets);
-    const { week: nextWeek, day: nextDay } = selectNextDay(profile?.programRegistrationId as string, profile?.week as number, profile?.day as number )(store.getState());
+    const { week: nextWeek, day: nextDay } = selectNextDay(profile?.programRegistrationId as string, profile?.week as number, profile?.day as number)(store.getState());
     await setMyProfile({
         ...profile,
         week: nextWeek ? nextWeek : null,
@@ -55,7 +55,7 @@ export const completeWorkout = async (week: number, day: number) => {
     } as ProfileDb);
     const autoregulationScheme = selectAutoregulationScheme(profile?.autoregulationSchemeId as string)(store.getState());
     const movementsWithDuplicates = sets.map(s => s.movement);
-    const uniqueMovements : string[] = uniq(movementsWithDuplicates);
+    const uniqueMovements: string[] = uniq(movementsWithDuplicates);
     const newOrms = uniqueMovements.map(movement => {
         const orm = ormsByMovement[movement];
         const relatedSets = setsByMovement[movement];
@@ -79,22 +79,23 @@ export const completeWorkout = async (week: number, day: number) => {
         }
         return orm;
     });
-    const newOrmsWithNewIds = flatten(newOrms.map(ormDb => {
-        const createdAtIso = new Date().toISOString();
-        return [
-            { 
-                ...ormDb,
-                ormId: uuid.v4(),
-                label: createdAtIso,
-                createdAtIso,
-                updatedAtIso: createdAtIso
-            },
-            {
-                ...ormDb,
-                label: 'latest',
-                updatedAtIso: createdAtIso
-            }
-        ]
+    await Promise.all(uniqueMovements.map(async (movement) => {
+        const latestOrms = await fetchLatestOrmsByMovementLabel(movement, 'latest');
+        console.log(latestOrms);
+        await Promise.all(latestOrms.map(async (ormDb) => {
+            await updateOrmLabel(ormDb, ormDb.createdAtIso);
+        }));
     }));
+    const newOrmsWithNewIds = newOrms.map(ormDb => {
+        const createdAtIso = new Date().toISOString();
+        return {
+            ...ormDb,
+            ormId: uuid.v4(),
+            label: 'latest',
+            'movement-label': `${ormDb.movement}-latest`,
+            createdAtIso,
+            updatedAtIso: createdAtIso
+        }
+    });
     batchAndSaveOneRepMaxesToDb(newOrmsWithNewIds);
 };

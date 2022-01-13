@@ -28,6 +28,7 @@ import { ProfileDb } from './Profile/types';
 import { fetchAllAutoregulationSchemes } from './AutoregulationSchemes/actions';
 import { getCredentialsAndId } from './Auth/util';
 import { selectPreviousDay, selectProgramRegistration } from './ProgramRegistrations/selectors';
+import { Dev } from './Dev/dev';
 
 // login();
 
@@ -94,6 +95,7 @@ function App() {
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/programs" element={<Programs />} />
             <Route path="/workout" element={<Workout />} />
+            <Route path="/dev" element={<Dev />} />
             <Route path="/" element={<Home />} />
             <Route path="/home" element={<Home />} />
           </Routes>

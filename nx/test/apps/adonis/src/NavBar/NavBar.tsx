@@ -49,6 +49,9 @@ export const NavBar = () => {
               <NavLink style={isActive => isActive ? { textDecoration: 'underline' } : {}} className="navBarButton" to="/programs">Programs</NavLink>
             </IconButton>)}
             {username && (<IconButton size="small" color="inherit">
+              <NavLink style={isActive => isActive ? { textDecoration: 'underline' } : {}} className="navBarButton" to="/dev">Dev</NavLink>
+            </IconButton>)}
+            {username && (<IconButton size="small" color="inherit">
               <NavLink style={isActive => isActive ? { textDecoration: 'underline' } : {}} className="navBarButton" to="/calendar">Calendar</NavLink>
             </IconButton>)}
           </Box>
